@@ -218,10 +218,15 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
 
             });
 
-        program.command('install')
+        program.command('install <os>')
             .description("Install steps to get the LogDNA Collector Agent onto your staging/production hosts")
-            .action(function() {
-                log(require("./install").replace(/ZZZZZZZZ/g, (config.key || "YOUR_API_KEY_HERE")));
+            .action(function(os) {
+                try {
+                    log(require("./install")[os].replace(/ZZZZZZZZ/g, (config.key || "YOUR_API_KEY_HERE")));
+                } catch (e) {
+                    log('OS Type: ' + os + ' is not a supported option. Valid options are:');
+                    log('deb, rpm, windows');
+                }
             });
 
         program.command('info')
