@@ -1,0 +1,4 @@
+#!/bin/sh
+
+chmod -R 777 /usr/local/logdna
+ln -sf /usr/local/logdna/bin/logdna /usr/local/bin/logdna

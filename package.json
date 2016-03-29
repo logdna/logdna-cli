@@ -1,0 +1,35 @@
+{
+  "name": "logdna-cli",
+  "version": "1.0.8",
+  "description": "LogDNA CLI",
+  "main": "index.js",
+  "dependencies": {
+    "bufferutil": "^1.2.1",
+    "commander": "^2.9.0",
+    "lodash": "^3.10.1",
+    "properties": "^1.2.1",
+    "semver": "^5.1.0",
+    "utf-8-validate": "^1.2.1",
+    "ws": "^1.0.1"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-exec": "^0.4.6",
+    "grunt-line-remover": "0.0.2",
+    "load-grunt-tasks": "^3.4.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/logdna/logdna-cli.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/logdna/logdna-cli/issues"
+  },
+  "homepage": "https://github.com/logdna/logdna-cli"
+}
