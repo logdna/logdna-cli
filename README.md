@@ -30,4 +30,4 @@ Go to the [LogDNA website](https://lognda.com), select your OS and follow the in
 
 ## Contributing
 
-Contributions are always welcome. See the [contributing guide](./CONTRIBUTING) to learn how you can help.
+Contributions are always welcome. See the [contributing guide](./CONTRIBUTING.md) to learn how you can help.
