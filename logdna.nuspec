@@ -4,7 +4,7 @@
   <metadata>
     <id>logdna</id>
     <title>LogDNA CLI for Windows</title>
-    <version>1.0.8</version>
+    <version>1.0.9</version>
     <authors>sedouard</authors>
     <owners>leeliu</owners>
     <summary>The official LogDNA CLI</summary>
