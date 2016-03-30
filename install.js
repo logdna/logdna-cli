@@ -42,7 +42,7 @@ Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' f
 
 
 module.exports.windows = hereDoc(function()
-{/*!Below are instructions on getting our log collector/shipper agent installed on to your staging and production hosts.  It should work on most YUM or APT-based Linux systems.  Please let us know if you encounter errors on any specific hosts.  The agent will auto-reconnect on disconnect and is self-updating so it's ideal on auto-scaling instances.
+{/*!Below are instructions on getting our log collector/shipper agent installed on to your staging and production hosts.  It should work on most Windows Server systems.  Please let us know if you encounter errors on any specific hosts.  The agent will auto-reconnect on disconnect and is self-updating so it's ideal on auto-scaling instances.
 
 Windows Server Hosts:
 ================================================

@@ -218,14 +218,16 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
 
             });
 
-        program.command('install <os>')
+        program.command('install [os]')
             .description("Install steps to get the LogDNA Collector Agent onto your staging/production hosts")
             .action(function(os) {
                 try {
                     log(require("./install")[os].replace(/ZZZZZZZZ/g, (config.key || "YOUR_API_KEY_HERE")));
                 } catch (e) {
-                    log('OS Type: ' + os + ' is not a supported option. Valid options are:');
-                    log('deb, rpm, windows');
+                    log('Missing or invalid OS. Try one of the following:');
+                    log('logdna install deb');
+                    log('logdna install rpm');
+                    log('logdna install windows');
                 }
             });
 
