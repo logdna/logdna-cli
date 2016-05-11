@@ -8,13 +8,17 @@ The LogDNA CLI allows you to signup for a new account and tail your servers righ
 
 Download the [LogDNA CLI installer for Mac] (http://repo.logdna.com/mac/logdna-cli.pkg).  
 
-Alternatively install via brew cask  
-```brew cask update```  
-```brew cask install logdna-cli```
+Alternatively install via [brew cask](https://caskroom.github.io/):
+```
+brew cask update
+```
+```
+brew cask install logdna-cli
+```
 
 ### Windows
 
-To install on Windows, using [chocolatey](https://chocolatey.org)
+To install on Windows, using [chocolatey](https://chocolatey.org):
 
 ```
 choco install logdna
