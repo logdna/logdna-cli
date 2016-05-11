@@ -9,9 +9,10 @@ module.exports.deb = hereDoc(function()
 
 Debian/Ubuntu/APT hosts:
 ========================
+wget -O- http://repo.logdna.com/logdna.gpg | sudo apt-key add -
 echo "deb http://repo.logdna.com stable main" | sudo tee /etc/apt/sources.list.d/logdna.list
 sudo apt-get update
-sudo apt-get install -y --force-yes logdna-agent
+sudo apt-get install logdna-agent < "/dev/null" # dev/null required for scripting
 sudo logdna-agent -k ZZZZZZZZ # this is your unique Agent API Key
 # /var/log is monitored/added by default (recursively), optionally specify more folders here
 sudo logdna-agent -d /path/to/log/folders
