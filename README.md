@@ -44,7 +44,8 @@ Requirements:
 * Node version 5
 * grunt (```npm install -g grunt```)
 * fpm (```gem install fpm```)
-* gnu-tar, if you are building a Linux binary (```brew install gnu-tar```)
+* rpm-build, if you are building an rpm binary (```yum install rpm-build```)
+* gnu-tar, if you are building a Linux binary]
 * nexe, if you are building a Windows binary (```npm install -g nexe```)
 
 Once you've cloned the repo and entered the directory, exceute:
