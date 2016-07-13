@@ -46,6 +46,7 @@ Requirements:
 * fpm (```gem install fpm```)
 * gnu-tar, if you are building a Linux binary (```brew install gnu-tar```)
 * nexe, if you are building a Windows binary (```npm install -g nexe```)
+
 Once you've cloned the repo and entered the directory, exceute:
 ```
 npm install
