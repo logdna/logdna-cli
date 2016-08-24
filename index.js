@@ -5,7 +5,7 @@ var pkg = require('./package.json');
 var properties = require("properties");
 var _ = require("lodash");
 var WebSocket = require('./lib/logdna-websocket');
-var minireq = require("./lib/minireq");
+var got = require('got');
 var input = require("./lib/input");
 var semver = require("semver");
 var os = require("os");
@@ -39,7 +39,7 @@ program
         log();
     });
 
-minireq.setUA(program._name + "-cli/" + pkg.version);
+var ua = program._name + "-cli/" + pkg.version;
 
 properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
     config = config || {};
@@ -59,7 +59,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                             input.done();
 
                             key = (key || '').toLowerCase();
-                            minireq.post( (LOGDNA_APISSL ? "https://" : "http://") + LOGDNA_APIHOST + "/register", { email: email, key: key, firstname: firstname, lastname: lastname, company: company }, handleReqError(function(res, body) {
+                            apiPost(config, "register", { auth: false, email: email, key: key, firstname: firstname, lastname: lastname, company: company }, function(body) {
                                 config.email = email;
                                 if (config.account != body.account) {
                                     config.account = body.account;
@@ -78,7 +78,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                                     log();
                                     return;
                                 });
-                            }));
+                            });
                         });
                     });
                 });
@@ -95,7 +95,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                         if (!EMAIL_REGEX.test(email))
                             return log("Invalid email address");
 
-                        minireq.post( (LOGDNA_APISSL ? "https://" : "http://") + encodeURIComponent(email) + ":" + encodeURIComponent(password) + "@" + LOGDNA_APIHOST + "/login", null, handleReqError(function(res, body) {
+                        apiPost(config, "login", { auth: email + ':' + password }, function(body) {
                             config.email = email;
                             if (body.accounts.length && config.account != body.accounts[0]) {
                                 config.account = body.accounts[0];
@@ -107,7 +107,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                             saveConfig(config, function() {
                                 log("Logged in successfully as: " + email + ". Saving credentials to local config.");
                             });
-                        }));
+                        });
                     });
                 });
             });
@@ -280,25 +280,41 @@ function apiCall(config, endpoint, method, params, callback) {
         params = null;
     }
 
-    var hmacParams = authParams(config);
-
-    if (method == "get") {
-        params = _.extend(params || {}, hmacParams);
-
-        minireq.get( (LOGDNA_APISSL ? "https://" : "http://") + LOGDNA_APIHOST + "/" + endpoint + "?" + qs.stringify(params), handleReqError(function(res, body) {
-            callback(body);
-        }));
+    var opts = { headers: { 'user-agent': ua }};
+    if (params && params.auth != null) {
+        if (params.auth) { opts.auth = params.auth; }
+        delete params.auth;
+        opts.query = params;
 
     } else {
-        minireq.post( (LOGDNA_APISSL ? "https://" : "http://") + LOGDNA_APIHOST + "/" + endpoint + "?" + qs.stringify(hmacParams), params, handleReqError(function(res, body) {
-            callback(body);
-        }));
+        var hmacParams = authParams(config);
+        params = _.extend(params || {}, hmacParams);
+        opts.query = params;
     }
+
+    if (method == 'post') { opts.method = 'post'; }
+
+    got((LOGDNA_APISSL ? "https://" : "http://") + LOGDNA_APIHOST + "/" + endpoint, opts)
+    .then(res => {
+        if (res.body && res.body.substring(0, 1) == "{") {
+            res.body = JSON.parse(res.body);
+        }
+        callback(res.body);
+    })
+    .catch(err => {
+        if (err.statusCode == "403") {
+            return log("Access token invalid. If you created or changed your password recently, please 'logdna login' again. Type 'logdna --help' for more info.");
+        } else {
+            return log("Error " + err.statusCode + ": " + err.response.body);
+        }
+    });
 }
 
 function authParams(config) {
-    if (!config.token)
-        return log("Please login first. Type 'logdna login' or 'logdna --help' for more info.");
+    if (!config.token) {
+        log("Please login first. Type 'logdna login' or 'logdna --help' for more info.");
+        return process.exit();
+    }
 
     var hmacParams = {
         email: config.email
@@ -308,22 +324,6 @@ function authParams(config) {
 
     hmacParams.hmac = generateHmac(hmacParams, config.token);
     return hmacParams;
-}
-
-function handleReqError(callback) {
-    return function(err, res, body) {
-        if (err || res.statusCode != "200") {
-            if (err) {
-                return log("HTTP Error: " + err);
-            } else if (res.statusCode == "403") {
-                return log("Access token invalid. If you created or changed your password recently, please 'logdna login' again. Type 'logdna --help' for more info.");
-            } else {
-                return log("Error " + res.statusCode + ": " + JSON.stringify(body));
-            }
-        }
-
-        callback(res, body);
-    };
 }
 
 function performUpgrade(config, force, callback) {
@@ -342,21 +342,22 @@ function performUpgrade(config, force, callback) {
         }
 
         if (force) log("Checking for updates...");
-        minireq.get(UPDATE_CHECK_URL, { timeout: (force ? 30000 : 2500) }, function(err, res, body) {
-            if (err || !body || !semver.valid(body.replace(/\r/g, "").replace(/\n/g, ""))) {
+        got(UPDATE_CHECK_URL, { timeout: (force ? 30000 : 2500) })
+        .then(res => {
+            if (res.body) { res.body = res.body.replace(/\r/g, "").replace(/\n/g, ""); }
+            if (!semver.valid(res.body)) {
                 // error during update check, set to check again in a day
                 config.updatecheck = Date.now() - UPDATE_CHECK_INTERVAL + 86400000;
                 saveConfig(config);
                 return callback && callback();
             }
 
-            body = body.replace(/\r/g, "").replace(/\n/g, "");
             config.updatecheck = Date.now();
             saveConfig(config);
 
-            if (semver.gt(body, pkg.version)) {
+            if (semver.gt(res.body, pkg.version)) {
                 // update needed
-                log("Performing upgrade from " + pkg.version + " to " + body + "...");
+                log("Performing upgrade from " + pkg.version + " to " + res.body + "...");
                 var shell = spawn('/bin/bash', ['-c',
                     'if [[ ! -z $(which curl) ]]; then curl -so /tmp/logdna.gz ' + UPDATE_UPDATE_URL + '; elif [[ ! -z $(which wget) ]]; then wget -qO /tmp/logdna.gz ' + UPDATE_UPDATE_URL + '; fi; gunzip -f /tmp/logdna.gz; cp -f /tmp/logdna /usr/local/logdna/bin/logdna; chmod 777 /usr/local/logdna/bin/logdna 2> /dev/null; echo -n "Successfully upgraded logdna-cli to "; /usr/local/bin/logdna -v'
                 ], { stdio: 'inherit' });

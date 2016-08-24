@@ -6,6 +6,7 @@
   "dependencies": {
     "bufferutil": "^1.2.1",
     "commander": "^2.9.0",
+    "got": "^6.3.0",
     "lodash": "^3.10.1",
     "properties": "^1.2.1",
     "semver": "^5.1.0",
