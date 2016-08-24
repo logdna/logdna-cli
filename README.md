@@ -4,15 +4,13 @@ The LogDNA CLI allows you to signup for a new account and tail your servers righ
 
 ## Installation
 
-### OS X
+### macOS
 
 Download the [LogDNA CLI installer for Mac] (http://repo.logdna.com/mac/logdna-cli.pkg).  
 
 Alternatively install via [brew cask](https://caskroom.github.io/):
 ```
 brew cask update
-```
-```
 brew cask install logdna-cli
 ```
 
@@ -32,11 +30,12 @@ For Ubuntu/Debian:
 wget -qO /tmp/logdna-cli.deb http://repo.logdna.com/linux/logdna-cli.deb && sudo dpkg -i /tmp/logdna-cli.deb
 ```
 
-### Using the CLI
+## Using the CLI
 
 Go to the [LogDNA website](https://logdna.com), select your OS and follow the instructions.
+You can also type: `logdna --help`
 
-### Building the CLI
+## Building the CLI
 
 If you would like to build the CLI yourself, follow the instructions below.
 
