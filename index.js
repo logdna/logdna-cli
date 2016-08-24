@@ -73,9 +73,9 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                                     log();
                                     log("Next steps:");
                                     log("===========");
-                                    log("1) We've sent you a welcome email to create your password. Enter it using 'logdna login'");
-                                    log("2) Install our log collector agent on to your staging/production hosts. See 'logdna install' for more info.");
-                                    log("3) Or, if you use Heroku, use 'logdna heroku <heroku-app-name>' instead to set up log shipping.");
+                                    log("1) We've sent you a welcome email to create your password. Once set, come back here and use 'logdna login'");
+                                    log("2) Type 'logdna install' for more info on collecting your logs via our agent, syslog, Heroku, API, etc.");
+                                    log();
                                     return;
                                 });
                             }));
@@ -95,7 +95,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                         if (!EMAIL_REGEX.test(email))
                             return log("Invalid email address");
 
-                        minireq.post( (LOGDNA_APISSL ? "https://" : "http://") + encodeURIComponent(email) + ":" + encodeURIComponent(password) + "@" +LOGDNA_APIHOST + "/login", null, handleReqError(function(res, body) {
+                        minireq.post( (LOGDNA_APISSL ? "https://" : "http://") + encodeURIComponent(email) + ":" + encodeURIComponent(password) + "@" + LOGDNA_APIHOST + "/login", null, handleReqError(function(res, body) {
                             config.email = email;
                             if (body.accounts.length && config.account != body.accounts[0]) {
                                 config.account = body.accounts[0];
@@ -113,7 +113,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
             });
 
         program.command('tail [query]')
-            .description("Realtime tail with optional filtering. See 'logdna tail --help'")
+            .description("Live tail with optional filtering. See 'logdna tail --help'")
             .option('-d, --debug', "Show debug level messages. Filtered by default")
             .option('-h, --hosts <hosts>', "Filter on hosts (separate by comma)")
             .option('-a, --apps <apps>', "Filter on apps (separate by comma)")
@@ -156,6 +156,13 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                 });
 
                 ws.on('error', function (err) {
+                    err = err.toString();
+                    if (err.indexOf('401') > -1) {
+                        // invalid token
+                        log("Access token invalid. If you created or changed your password recently, please 'logdna login' again. Type 'logdna --help' for more info.");
+                        return process.exit();
+                    }
+
                     log("Error: " + err);
                 });
 
@@ -165,7 +172,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
             });
 
         program.command('search [query]')
-            .description("Search with optional filtering. See 'logdna search --help'")
+            .description("Limited search functionality with optional filtering. See 'logdna search --help'")
             .option('-d, --debug', "Show debug level messages. Filtered by default")
             .option('-h, --hosts <hosts>', "Filter on hosts (separate by comma)")
             .option('-a, --apps <apps>', "Filter on apps (separate by comma)")
@@ -206,7 +213,8 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
             });
 
         program.command('heroku <heroku-app-name>')
-            .description("Generates a Heroku Drain URL for log shipping to LogDNA")
+            // .description("Generates a Heroku Drain URL for log shipping to LogDNA")
+            .description("Deprecated: Use 'logdna install heroku' instead")
             .action(function(app) {
                 if (!config.token)
                     return log("Please login first. Type 'logdna login' or 'logdna --help' for more info.");
@@ -219,15 +227,21 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
             });
 
         program.command('install [os]')
-            .description("Install steps to get the LogDNA Collector Agent onto your staging/production hosts")
+            .description("Instructions for collecting logs from staging/production hosts and systems")
             .action(function(os) {
                 try {
                     log(require("./install")[os].replace(/ZZZZZZZZ/g, (config.key || "YOUR_API_KEY_HERE")));
                 } catch (e) {
-                    log('Missing or invalid OS. Try one of the following:');
-                    log('logdna install deb');
-                    log('logdna install rpm');
-                    log('logdna install windows');
+                    log('Try one of the following:');
+                    log('logdna install deb         # Debian/Ubuntu/Linux Mint');
+                    log('logdna install rpm         # CentOS/Amazon Linux/Red Hat/Enterprise Linux');
+                    log('logdna install windows     # Windows Server');
+                    log('logdna install mac         # macOS Server');
+                    log('logdna install heroku      # Heroku add-on');
+                    log('logdna install syslog      # rsyslog/syslog-ng/syslog');
+                    log('logdna install api         # REST-based ingestion API');
+                    log('logdna install nodejs      # Node.js library');
+                    log();
                 }
             });
 
