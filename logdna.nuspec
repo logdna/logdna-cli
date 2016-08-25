@@ -4,11 +4,11 @@
   <metadata>
     <id>logdna</id>
     <title>LogDNA CLI for Windows</title>
-    <version>1.0.9</version>
-    <authors>sedouard</authors>
+    <version>1.1.0</version>
+    <authors>sedouard,leeliu</authors>
     <owners>leeliu</owners>
-    <summary>The official LogDNA CLI</summary>
-    <description>This CLI allows you to directly signup for logdna.com logging service right from your console.</description>
+    <summary>LogDNA CLI for Windows</summary>
+    <description>The LogDNA CLI allows you to signup for a new account and tail your server logs right from the command line.</description>
     <projectUrl>https://github.com/logdna/logdna-cli</projectUrl>
     <packageSourceUrl>https://github.com/logdna/logdna-cli</packageSourceUrl>
     <docsUrl>https://github.com/logdna/logdna-cli</docsUrl>
@@ -18,7 +18,7 @@
     <licenseUrl>https://github.com/logdna/logdna-cli/blob/master/LICENSE.md</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <iconUrl>https://logdna.com/assets/images/logdna_logo.png</iconUrl>
-    <releaseNotes>Initial Release of the LogDNA CLI for Windows</releaseNotes>
+    <releaseNotes>LogDNA CLI for Windows</releaseNotes>
   </metadata>
   <files>
     <file src="tools\**" target="tools" />
