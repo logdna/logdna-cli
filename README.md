@@ -33,7 +33,7 @@ wget -qO /tmp/logdna-cli.deb http://repo.logdna.com/linux/logdna-cli.deb && sudo
 ## Using the CLI
 
 Go to the [LogDNA website](https://logdna.com), select your OS and follow the instructions.
-You can also type: `logdna --help`
+You can also type: `logdna --help` or `node index --help` using the source.
 
 ## Building
 
