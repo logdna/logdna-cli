@@ -35,28 +35,64 @@ wget -qO /tmp/logdna-cli.deb http://repo.logdna.com/linux/logdna-cli.deb && sudo
 Go to the [LogDNA website](https://logdna.com), select your OS and follow the instructions.
 You can also type: `logdna --help`
 
-## Building the CLI
+## Building
 
-If you would like to build the CLI yourself, follow the instructions below.
+To build the cli, ensure you have [nexe](https://www.npmjs.com/package/nexe) installed. This packages the LogDNA CLI as a native executable with the node.js runtime bundled. This will automatically build the runtime from source.
 
-Requirements:
-* Node version 5
-* grunt (```npm install -g grunt```)
-* fpm (```gem install fpm```)
-* rpm-build, if you are building an rpm binary (```yum install rpm-build```)
-* gnu-tar, if you are building a Linux binary]
-* nexe, if you are building a Windows binary (```npm install -g nexe```)
+### Linux
 
-Once you've cloned the repo and entered the directory, exceute:
+Ensure you have a native C++ compiler installed.
+
+### Windows
+
+Ensure you have Visual Studio 2015 or newer installed.
+
+### macOS
+
+Ensure you have Xcode 7 or newer installed.
+
+### Creating the binary
+
+To start the build:
+
 ```
-npm install
+grunt build
 ```
-Choose the appropriate target:
+
+This takes a bit of time and will output a binary at `./logdna` (or `.\logdna.exe` if on Windows). For the initial build, majority of time will be spent building node.js. Subsequent builds will be much faster as node.js would've already been built.
+
+## Packaging
+
+### Linux
+
 ```
-grunt mac
+sudo gem install fpm
+sudo yum install rpm-build createrepo
+sudo yum --enablerepo=epel install dpkg-devel dpkg-dev
 grunt linux
+```
+
+This will output the `deb` and `yum` files to the root of the repo.
+
+### Windows
+
+Install [chocolatey](https://chocolatey.org). Then do:
+
+```
 grunt windows
 ```
+
+This will output the chocolatey package under `.\.builds\windows`.
+
+### macOS
+
+```
+gem install fpm
+grunt mac
+```
+
+This will output the `pkg` file to the root of the repo. Signing will likely fail since we typically sign it with our Apple Developer key, but the package should still be usable, just unsigned.
+
 
 ## Contributing
 
