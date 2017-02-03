@@ -21,6 +21,7 @@ var UPDATE_CHECK_INTERVAL = 86400000; // 1 day
 var DEFAULT_CONF_FILE = '~/.logdna.conf'.replace('~', process.env.HOME || process.env.USERPROFILE);
 var LOGDNA_APIHOST = process.env.LDAPIHOST || 'api.logdna.com';
 var LOGDNA_APISSL = isNaN(process.env.USESSL) ? true : +process.env.USESSL;
+var SUPPORTS_COLORS = /^screen|^xterm|^vt100|color|ansi|cygwin|linux/i.test(process.env.TERM) && (!process.stdout || process.stdout.isTTY); // ensure console supports colors and not being piped
 
 var EMAIL_REGEX = /[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
 
@@ -47,48 +48,58 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
     config = config || {};
 
     performUpgrade(config, function() {
-        program.command('register <email> [key]')
+        program.command('register [email] [key]')
             .description('Register a new LogDNA account. [key] is optional and will autogenerate')
             .action(function(email, key) {
-                email = email.toLowerCase();
-                if (!EMAIL_REGEX.test(email))
-                    return log('Invalid email address');
+                var nextstep = function(email) {
+                    email = email.toLowerCase();
+                    if (!EMAIL_REGEX.test(email))
+                        return log('Invalid email address');
 
-                input.required('First name: ', function(firstname) {
-                    input.required('Last name: ', function(lastname) {
-                        input.required('Company/Organization: ', function(company) {
-                            input.done();
+                    input.required('First name: ', function(firstname) {
+                        input.required('Last name: ', function(lastname) {
+                            input.required('Company/Organization: ', function(company) {
+                                input.done();
 
-                            key = (key || '').toLowerCase();
-                            apiPost(config, 'register', { auth: false, email: email, key: key, firstname: firstname, lastname: lastname, company: company }, function(body) {
-                                config.email = email;
-                                if (config.account !== body.account) {
-                                    config.account = body.account;
-                                    config.token = null;
-                                }
-                                config.key = body.key;
-                                if (body.token) { config.token = body.token; } // save token if available
+                                key = (key || '').toLowerCase();
+                                apiPost(config, 'register', { auth: false, email: email, key: key, firstname: firstname, lastname: lastname, company: company }, function(body) {
+                                    config.email = email;
+                                    if (config.account !== body.account) {
+                                        config.account = body.account;
+                                        config.token = null;
+                                    }
+                                    config.key = body.key;
+                                    if (body.token) { config.token = body.token; } // save token if available
 
-                                saveConfig(config, function() {
-                                    log('Thank you for signing up! Your API Key is: ' + body.key + '. Saving credentials to local config.');
-                                    log();
-                                    log('Next steps:');
-                                    log('===========');
-                                    log('1) We\'ve sent you a welcome email to create your password. Once set, come back here and use \'logdna login\'');
-                                    log('2) Type \'logdna install\' for more info on collecting your logs via our agent, syslog, Heroku, API, etc.');
-                                    log();
-                                    return;
+                                    saveConfig(config, function() {
+                                        log('Thank you for signing up! Your API Key is: ' + body.key + '. Saving credentials to local config.');
+                                        log();
+                                        log('Next steps:');
+                                        log('===========');
+                                        log('1) We\'ve sent you a welcome email to create your password. Once set, come back here and use \'logdna login\'');
+                                        log('2) Type \'logdna install\' for more info on collecting your logs via our agent, syslog, Heroku, API, etc.');
+                                        log();
+                                        return;
+                                    });
                                 });
                             });
                         });
                     });
-                });
+                };
+
+                if (email) {
+                    nextstep(email);
+                } else {
+                    input.required('Email: ', function(email) {
+                        nextstep(email);
+                    });
+                }
             });
 
-        program.command('login')
+        program.command('login [email]')
             .description('Login to a LogDNA user account')
-            .action(function() {
-                input.required('Email: ', function(email) {
+            .action(function(email) {
+                var nextstep = function(email) {
                     input.hidden('Password: ', function(password) {
                         input.done();
 
@@ -110,7 +121,15 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                             });
                         });
                     });
-                });
+                };
+
+                if (email) {
+                    nextstep(email);
+                } else {
+                    input.required('Email: ', function(email) {
+                        nextstep(email);
+                    });
+                }
             });
 
         program.command('tail [query]')
@@ -142,7 +161,6 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                 params.q = params.q.trim();
 
                 var ws = new WebSocket((LOGDNA_APISSL ? 'https://' : 'http://') + LOGDNA_APIHOST + '/ws/tail?' + qs.stringify(params));
-                var t;
 
                 ws.on('open', function open() {
                     log('tail started. hosts: ' + (options.hosts || 'all') + '. apps: ' + (options.apps || 'all') + '. levels: ' + (options.levels || (options.debug ? 'all' : '-debug')) + '. query: ' + (query || 'none'));
@@ -160,8 +178,14 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                         return;
                     }
 
-                    t = new Date(data.p._ts);
-                    log(t.toString().substring(4, 11) + t.toString().substring(16, 24) + ' ' + data.p._host + ' ' + data.p._app + ' ' + (data.p.level ? '[' + data.p.level + '] ' : '') + data.p._line);
+                    if (Array.isArray(data.p)) {
+                        _.each(data.p, function(line) {
+                            renderLine(line);
+                        });
+
+                    } else {
+                        renderLine(data.p);
+                    }
                 });
 
                 ws.on('error', function(err) {
@@ -181,7 +205,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
             });
 
         program.command('search [query]')
-            .description('Limited search functionality with optional filtering. See \'logdna search --help\'')
+            .description('Limited search functionality with optional filtering (beta). See \'logdna search --help\'')
             .option('-d, --debug', 'Show debug level messages. Filtered by default')
             .option('-h, --hosts <hosts>', 'Filter on hosts (separate by comma)')
             .option('-a, --apps <apps>', 'Filter on apps (separate by comma)')
@@ -220,14 +244,13 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
 
                     _.each(body.lines, function(line) {
                         t = new Date(line._ts);
-                        log(t.toString().substring(4, 11) + t.toString().substring(16, 24) + ' ' + line._host + ' ' + line._app + ' ' + (line.level ? '[' + line.level + '] ' : '') + line._line);
+                        renderLine(line);
                     });
                 });
             });
 
         program.command('heroku <heroku-app-name>')
-            // .description("Generates a Heroku Drain URL for log shipping to LogDNA")
-            .description('Deprecated: Use \'logdna install heroku\' instead')
+            .description('Generates a Heroku Drain URL for log shipping to LogDNA')
             .action(function(app) {
                 if (!config.token)
                     return log('Please login first. Type \'logdna login\' or \'logdna --help\' for more info.');
@@ -246,19 +269,23 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                     log(require('./install')[os].replace(/ZZZZZZZZ/g, (config.key || 'YOUR_API_KEY_HERE')));
                 } catch (e) {
                     log('Try one of the following:');
-                    log('logdna install deb         # Debian/Ubuntu/Linux Mint');
-                    log('logdna install rpm         # CentOS/Amazon Linux/Red Hat/Enterprise Linux');
-                    log('logdna install windows     # Windows Server');
-                    log('logdna install mac         # macOS Server');
-                    log('logdna install heroku      # Heroku add-on');
-                    log('logdna install syslog      # rsyslog/syslog-ng/syslog');
-                    log('logdna install api         # REST-based ingestion API');
-                    log('logdna install nodejs      # Node.js library');
+                    log('logdna install deb            # Debian/Ubuntu/Linux Mint');
+                    log('logdna install rpm            # CentOS/Amazon Linux/Red Hat/Enterprise Linux');
+                    log('logdna install windows        # Windows Server');
+                    log('logdna install mac            # macOS Server');
+                    log('logdna install heroku         # Heroku Elements marketplace add-on');
+                    log('logdna install heroku-drains  # Heroku drains');
+                    log('logdna install syslog         # rsyslog/syslog-ng/syslog');
+                    log('logdna install k8s            # Kubernetes Cluster');
+                    log('logdna install docker         # Docker');
+                    log('logdna install api            # REST-based ingestion API');
+                    log('logdna install nodejs         # Node.js library');
                     log();
                 }
             });
 
         program.command('info')
+            .alias('whoami')
             .description('Show current logged in user info')
             .action(function() {
                 apiGet(config, 'info', function(body) {
@@ -273,6 +300,11 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                     log('No update available. You have the latest version: ' + pkg.version);
                 });
             });
+
+        // helper for tail/search -h due to -h conflict for --hosts
+        if (process.argv && process.argv.length === 4 && ['tail', 'search'].indexOf(process.argv[2]) >= 0 && process.argv[3] === '-h') {
+            process.argv[3] = '--help';
+        }
 
         program.parse(process.argv);
         if (!process.argv.slice(2).length) return program.outputHelp(); // show help if no commands given
@@ -321,6 +353,22 @@ function apiCall(config, endpoint, method, params, callback) {
             return log('Error ' + err.statusCode + ': ' + err.response.body);
         }
     });
+}
+
+function renderLine(line) {
+    var t = new Date(line._ts);
+
+    if (SUPPORTS_COLORS) {
+        log('\x1b[38;5;240m' + t.toString().substring(4, 11) + t.toString().substring(16, 24) +
+            ' \x1b[38;5;166m' + line._host +
+            ' \x1b[38;5;74m' + line._app +
+            ' ' + (line.level ? '[' + line.level + '] ' : '') +
+            '\x1b[38;5;246m' + line._line +
+            '\x1b[0m');
+
+    } else {
+        log(t.toString().substring(4, 11) + t.toString().substring(16, 24) + ' ' + line._host + ' ' + line._app + ' ' + (line.level ? '[' + line.level + '] ' : '') + line._line);
+    }
 }
 
 function authParams(config) {

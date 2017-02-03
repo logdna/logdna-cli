@@ -5,7 +5,8 @@ function hereDoc(f) {
 }
 
 module.exports.deb = hereDoc(function()
-{/*!Below are instructions on getting our log collector/shipper agent installed on to your staging and production hosts.  It should work on most APT-based systems.  Please let us know if you encounter errors on any specific hosts.  The agent will auto-reconnect on disconnect and is self-updating so it's ideal on auto-scaling instances.
+{/*!
+Below are instructions on getting our log collector/shipper agent installed on to your staging and production hosts.  It should work on most APT-based systems.  Please let us know if you encounter errors on any specific hosts.  The agent will auto-reconnect on disconnect and is self-updating so it's ideal on auto-scaling instances.
 
 Debian/Ubuntu/Linux Mint hosts:
 ===============================
@@ -19,10 +20,12 @@ sudo logdna-agent -d /path/to/log/folders
 sudo update-rc.d logdna-agent defaults
 sudo /etc/init.d/logdna-agent start
 
-Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info*/});
+Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info
+*/});
 
 module.exports.rpm = hereDoc(function()
-{/*!Below are instructions on getting our log collector/shipper agent installed on to your staging and production hosts.  It should work on most YUM and Enterprise Linux systems.  Please let us know if you encounter errors on any specific hosts.  The agent will auto-reconnect on disconnect and is self-updating so it's ideal on auto-scaling instances.
+{/*!
+Below are instructions on getting our log collector/shipper agent installed on to your staging and production hosts.  It should work on most YUM and Enterprise Linux systems.  Please let us know if you encounter errors on any specific hosts.  The agent will auto-reconnect on disconnect and is self-updating so it's ideal on auto-scaling instances.
 
 CentOS/Amazon Linux/Red Hat/Enterprise Linux hosts:
 ===================================================
@@ -39,11 +42,13 @@ sudo logdna-agent -d /path/to/log/folders
 sudo chkconfig logdna-agent on
 sudo service logdna-agent start
 
-Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info*/});
+Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info
+*/});
 
 
 module.exports.windows = hereDoc(function()
-{/*!Below are instructions on getting our log collector/shipper agent installed on to your staging and production hosts.  It should work on most Windows Server systems.  Please let us know if you encounter errors on any specific hosts.  The agent will auto-reconnect on disconnect and is self-updating so it's ideal on auto-scaling instances.
+{/*!
+Below are instructions on getting our log collector/shipper agent installed on to your staging and production hosts.  It should work on most Windows Server systems.  Please let us know if you encounter errors on any specific hosts.  The agent will auto-reconnect on disconnect and is self-updating so it's ideal on auto-scaling instances.
 
 Windows Server Hosts:
 =====================
@@ -54,10 +59,12 @@ logdna-agent -k ZZZZZZZZ # this is your unique Agent API Key
 logdna-agent -d C:\path\to\log\folders
 nssm start logdna-agent
 
-Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info*/});
+Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info
+*/});
 
 module.exports.mac = hereDoc(function()
-{/*!Below are instructions on getting our log collector/shipper agent installed on to your staging and production hosts.  It should work on most macOS 10.8+ Server systems.  Please let us know if you encounter errors on any specific hosts.  The agent will auto-reconnect on disconnect and is self-updating so it's ideal on auto-scaling instances.
+{/*!
+Below are instructions on getting our log collector/shipper agent installed on to your staging and production hosts.  It should work on most macOS 10.8+ Server systems.  Please let us know if you encounter errors on any specific hosts.  The agent will auto-reconnect on disconnect and is self-updating so it's ideal on auto-scaling instances.
 
 macOS Server Hosts:
 ===================
@@ -69,36 +76,71 @@ sudo logdna-agent -d /path/to/log/folders
 # Optional: Always run logdna-agent in the background:
 sudo launchctl load -w /Library/LaunchDaemons/com.logdna.logdna-agent.plist
 
-Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info*/});
+Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info
+*/});
 
 module.exports.heroku = hereDoc(function()
-{/*!The LogDNA add-on is available through the Heroku Elements Marketplace.
+{/*!
+The LogDNA add-on is available through the Heroku Elements Marketplace.
 
 1) Sign up for an account first using 'logdna register'
 2) Install the add-on here: https://elements.heroku.com/addons/logdna
 
-Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info*/});
+Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info
+*/});
+
+module.exports['heroku-drains'] = hereDoc(function()
+{/*!
+Use 'logdna heroku <heroku-app-name>' to generate a Heroku Drain URL.
+*/});
 
 module.exports.syslog = hereDoc(function()
-{/*!We now support ingesting logs from rsyslog, syslog-ng, and plain 'ol syslog. Secure TLS, custom ports, etc.
+{/*!
+We support ingesting logs from rsyslog, syslog-ng, and plain 'ol syslog. Secure TLS, custom ports, etc.
 
 1) Sign up for an account first using 'logdna register'
 2) Follow syslog instructions here: https://app.logdna.com/pages/add-host
 
-Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info*/});
+Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info
+*/});
 
 module.exports.api = hereDoc(function()
-{/*!Send us your logs via our REST-based ingestion API.
+{/*!
+Send us your logs via our REST-based ingestion API.
 
 1) Sign up for an account first using 'logdna register'
 2) See our docs here: https://docs.logdna.com/docs/api
 
-Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info*/});
+Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info
+*/});
 
 module.exports.nodejs = hereDoc(function()
-{/*!Check out our official Node.js library. Supports both direct logging and integration via Winston.
+{/*!
+Check out our official Node.js library. Supports both direct logging and integration via Winston.
 
 1) Sign up for an account first using 'logdna register'
 2) See our GitHub repo here: https://github.com/logdna/nodejs
 
-Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info*/});
+Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info
+*/});
+
+module.exports.k8s = hereDoc(function()
+{/*!
+Ship logs from your Kubernetes v1.2+ cluster:
+
+1) Sign up for an account first using 'logdna register'
+2) Run: kubectl create secret generic logdna-agent-key --from-literal=logdna-agent-key=ZZZZZZZZ
+3) Run: kubectl create -f https://raw.githubusercontent.com/logdna/logdna-agent/master/logdna-agent-ds.yaml
+
+Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info
+*/});
+
+module.exports.docker = hereDoc(function()
+{/*!
+Ship logs from Docker containers:
+
+1) Sign up for an account first using 'logdna register'
+2) Follow Docker instructions here: https://app.logdna.com/pages/add-host
+
+Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info
+*/});
