@@ -6,16 +6,14 @@ function hereDoc(f) {
 
 module.exports.deb = hereDoc(function()
 {/*!
-Below are instructions on getting our log collector/shipper agent installed on to your staging and production hosts.  It should work on most APT-based systems.  Please let us know if you encounter errors on any specific hosts.  The agent will auto-reconnect on disconnect and is self-updating so it's ideal on auto-scaling instances.
+Run these commands on your Linux Ubuntu/Debian-based hosts, it'll install our self-updating collector agent:
 
-Debian/Ubuntu/Linux Mint hosts:
-===============================
 echo "deb http://repo.logdna.com stable main" | sudo tee /etc/apt/sources.list.d/logdna.list
-wget -O- http://repo.logdna.com/logdna.gpg | sudo apt-key add -
+wget -O- https://s3.amazonaws.com/repo.logdna.com/logdna.gpg | sudo apt-key add -
 sudo apt-get update
-sudo apt-get install logdna-agent < "/dev/null" # dev/null required for scripting
-sudo logdna-agent -k ZZZZZZZZ # this is your unique Agent API Key
-# /var/log is monitored/added by default (recursively), optionally specify more folders here
+sudo apt-get install logdna-agent < "/dev/null" # this line needed for copy/paste
+sudo logdna-agent -k ZZZZZZZZ # this is your unique API Key
+# /var/log is monitored/added by default (recursively), optionally add more dirs here
 sudo logdna-agent -d /path/to/log/folders
 sudo update-rc.d logdna-agent defaults
 sudo /etc/init.d/logdna-agent start
@@ -25,19 +23,16 @@ Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' f
 
 module.exports.rpm = hereDoc(function()
 {/*!
-Below are instructions on getting our log collector/shipper agent installed on to your staging and production hosts.  It should work on most YUM and Enterprise Linux systems.  Please let us know if you encounter errors on any specific hosts.  The agent will auto-reconnect on disconnect and is self-updating so it's ideal on auto-scaling instances.
+Run these commands on your Linux RPM-based hosts, it'll install our self-updating collector agent:
 
-CentOS/Amazon Linux/Red Hat/Enterprise Linux hosts:
-===================================================
 echo "[logdna]
 name=LogDNA packages
 baseurl=http://repo.logdna.com/el6/
 enabled=1
 gpgcheck=0" | sudo tee /etc/yum.repos.d/logdna.repo
-
 sudo yum -y install logdna-agent
-sudo logdna-agent -k ZZZZZZZZ # this is your unique Agent API Key
-# /var/log is monitored/added by default (recursively), optionally specify more folders here
+sudo logdna-agent -k ZZZZZZZZ # this is your unique API Key
+# /var/log is monitored/added by default (recursively), optionally add more dirs here
 sudo logdna-agent -d /path/to/log/folders
 sudo chkconfig logdna-agent on
 sudo service logdna-agent start
@@ -48,14 +43,12 @@ Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' f
 
 module.exports.windows = hereDoc(function()
 {/*!
-Below are instructions on getting our log collector/shipper agent installed on to your staging and production hosts.  It should work on most Windows Server systems.  Please let us know if you encounter errors on any specific hosts.  The agent will auto-reconnect on disconnect and is self-updating so it's ideal on auto-scaling instances.
+Run these commands on your Windows hosts using Command Prompt (cmd.exe), it'll install our self-updating collector agent:
 
-Windows Server Hosts:
-=====================
 @powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))" && SET PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin
 choco install logdna-agent -y
-logdna-agent -k ZZZZZZZZ # this is your unique Agent API Key
-:: by default the agent monitors %ALLUSERSPROFILE%\logs
+logdna-agent -k ZZZZZZZZ # this is your unique API Key
+:: %ALLUSERSPROFILE%\logs is monitored/added by default (recursively), optionally add more dirs here
 logdna-agent -d C:\path\to\log\folders
 nssm start logdna-agent
 
@@ -64,16 +57,15 @@ Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' f
 
 module.exports.mac = hereDoc(function()
 {/*!
-Below are instructions on getting our log collector/shipper agent installed on to your staging and production hosts.  It should work on most macOS 10.8+ Server systems.  Please let us know if you encounter errors on any specific hosts.  The agent will auto-reconnect on disconnect and is self-updating so it's ideal on auto-scaling instances.
+These commands require Homebrew package manager (http://brew.sh/).
+Run these commands on your macOS Server hosts, it'll install our self-updating collector agent:
 
-macOS Server Hosts:
-===================
 brew update
 brew cask install logdna-agent
-sudo logdna-agent -k ZZZZZZZZ # this is your unique Agent API Key
-# /var/log is monitored/added by default (recursively), optionally specify more folders here
+sudo logdna-agent -k ZZZZZZZZ # this is your unique API Key
+# /var/log is monitored/added by default (recursively), optionally add more dirs here
 sudo logdna-agent -d /path/to/log/folders
-# Optional: Always run logdna-agent in the background:
+# Optional: Have logdna-agent always run in the background
 sudo launchctl load -w /Library/LaunchDaemons/com.logdna.logdna-agent.plist
 
 Once shipping begins, you can tail using 'logdna tail' or 'logdna tail --help' for more info
