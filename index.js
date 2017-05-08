@@ -20,7 +20,8 @@ var UPDATE_UPDATE_URL = 'http://repo.logdna.com/PLATFORM/logdna.gz';
 var UPDATE_CHECK_INTERVAL = 86400000; // 1 day
 var DEFAULT_CONF_FILE = '~/.logdna.conf'.replace('~', process.env.HOME || process.env.USERPROFILE);
 var LOGDNA_APIHOST = process.env.LDAPIHOST || 'api.logdna.com';
-var LOGDNA_APISSL = isNaN(process.env.USESSL) ? true : +process.env.USESSL;
+// var LOGDNA_APISSL = isNaN(process.env.USESSL) ? true : +process.env.USESSL;
+var LOGDNA_APISSL = false;
 var SUPPORTS_COLORS = /^screen|^xterm|^vt100|color|ansi|cygwin|linux/i.test(process.env.TERM) && (!process.stdout || process.stdout.isTTY); // ensure console supports colors and not being piped
 
 var EMAIL_REGEX = /[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
@@ -203,6 +204,15 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                     log('tail lost connection');
                 });
             });
+
+        program.command('orgs')
+          .description('test endpoint')
+          .action(function(options) {
+            console.log(config);
+            apiGet(config, 'orgs', {}, function(body) {
+              console.log(body);
+            });
+          });
 
         program.command('search [query]')
             .description('Limited search functionality with optional filtering (beta). See \'logdna search --help\'')
