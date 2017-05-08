@@ -35,7 +35,7 @@ program
         log('  Examples:');
         log();
         log('    $ logdna register user@example.com');
-        log('    $ logdna register user@example.com b7c0487cfa5fa7327c9a166c6418598d    # use this if you were assigned an API Key');
+        log('    $ logdna register user@example.com b7c0487cfa5fa7327c9a166c6418598d    # use this if you were assigned an Ingestion Key');
         log('    $ logdna tail \'("timed out" OR "connection refused") -request\'');
         log('    $ logdna tail -a access.log 500');
         log('    $ logdna tail -l error,warn');
@@ -72,7 +72,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                                     if (body.token) { config.token = body.token; } // save token if available
 
                                     saveConfig(config, function() {
-                                        log('Thank you for signing up! Your API Key is: ' + body.key + '. Saving credentials to local config.');
+                                        log('Thank you for signing up! Your Ingestion Key is: ' + body.key + '. Saving credentials to local config.');
                                         log();
                                         log('Next steps:');
                                         log('===========');
@@ -256,7 +256,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                     return log('Please login first. Type \'logdna login\' or \'logdna --help\' for more info.');
 
                 log('Use the following Heroku CLI command to start log shipping:');
-                log('heroku drains:add https://' + config.account + ':' + (config.key || 'YOUR_API_KEY_HERE') + '@heroku.logdna.com/heroku/logplex?app=' + app + ' --app ' + app);
+                log('heroku drains:add https://' + config.account + ':' + (config.key || 'YOUR_INGESTION_KEY_HERE') + '@heroku.logdna.com/heroku/logplex?app=' + app + ' --app ' + app);
                 log();
                 log('Once shipping begins, you can tail using \'logdna tail -h ' + app + '\'');
 
@@ -266,7 +266,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
             .description('Instructions for collecting logs from staging/production hosts and systems')
             .action(function(os) {
                 try {
-                    log(require('./install')[os].replace(/ZZZZZZZZ/g, (config.key || 'YOUR_API_KEY_HERE')));
+                    log(require('./install')[os].replace(/ZZZZZZZZ/g, (config.key || 'YOUR_INGESTION_KEY_HERE')));
                 } catch (e) {
                     log('Try one of the following:');
                     log('logdna install deb            # Debian/Ubuntu/Linux Mint');

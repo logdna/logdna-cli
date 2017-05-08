@@ -12,7 +12,7 @@ echo "deb http://repo.logdna.com stable main" | sudo tee /etc/apt/sources.list.d
 wget -O- https://s3.amazonaws.com/repo.logdna.com/logdna.gpg | sudo apt-key add -
 sudo apt-get update
 sudo apt-get install logdna-agent < "/dev/null" # this line needed for copy/paste
-sudo logdna-agent -k ZZZZZZZZ # this is your unique API Key
+sudo logdna-agent -k ZZZZZZZZ # this is your unique Ingestion Key
 # /var/log is monitored/added by default (recursively), optionally add more dirs here
 sudo logdna-agent -d /path/to/log/folders
 sudo update-rc.d logdna-agent defaults
@@ -31,7 +31,7 @@ baseurl=http://repo.logdna.com/el6/
 enabled=1
 gpgcheck=0" | sudo tee /etc/yum.repos.d/logdna.repo
 sudo yum -y install logdna-agent
-sudo logdna-agent -k ZZZZZZZZ # this is your unique API Key
+sudo logdna-agent -k ZZZZZZZZ # this is your unique Ingestion Key
 # /var/log is monitored/added by default (recursively), optionally add more dirs here
 sudo logdna-agent -d /path/to/log/folders
 sudo chkconfig logdna-agent on
@@ -47,7 +47,7 @@ Run these commands on your Windows hosts using Command Prompt (cmd.exe), it'll i
 
 @powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))" && SET PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin
 choco install logdna-agent -y
-logdna-agent -k ZZZZZZZZ # this is your unique API Key
+logdna-agent -k ZZZZZZZZ # this is your unique Ingestion Key
 :: %ALLUSERSPROFILE%\logs is monitored/added by default (recursively), optionally add more dirs here
 logdna-agent -d C:\path\to\log\folders
 nssm start logdna-agent
@@ -62,7 +62,7 @@ Run these commands on your macOS Server hosts, it'll install our self-updating c
 
 brew update
 brew cask install logdna-agent
-sudo logdna-agent -k ZZZZZZZZ # this is your unique API Key
+sudo logdna-agent -k ZZZZZZZZ # this is your unique Ingestion Key
 # /var/log is monitored/added by default (recursively), optionally add more dirs here
 sudo logdna-agent -d /path/to/log/folders
 # Optional: Have logdna-agent always run in the background
