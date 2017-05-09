@@ -208,9 +208,28 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
         program.command('orgs')
           .description('test endpoint')
           .action(function(options) {
-            console.log(config);
+            // console.log(config);
             apiGet(config, 'orgs', {}, function(body) {
-              console.log(body);
+            // var body = '[{"id":"996226df4b","name":"LogDNA"},{"id":"36667db7ce","name":"NX"}]';
+              body = JSON.parse(body);
+              for (var i = 0; i < body.length; i++) {
+                log("id: " + body[i].id + " name: " + body[i].name
+                  + (body[i].id === config.account ? " (active)" : "") 
+                );
+              };
+              input.required('Active org: ', function(selection) {
+                input.done();
+                selection = parseInt(selection);
+                console.log(selection);
+                if (selection >= body.length || selection < 0) {
+                  log('Not a valid org number.');
+                  return;
+                }
+                config.account = body[selection].id;
+                saveConfig(config, function() {
+                  log('Successfully set current org to ' + body[selection].name);
+                });
+              });
             });
           });
 
