@@ -20,8 +20,7 @@ var UPDATE_UPDATE_URL = 'http://repo.logdna.com/PLATFORM/logdna.gz';
 var UPDATE_CHECK_INTERVAL = 86400000; // 1 day
 var DEFAULT_CONF_FILE = '~/.logdna.conf'.replace('~', process.env.HOME || process.env.USERPROFILE);
 var LOGDNA_APIHOST = process.env.LDAPIHOST || 'api.logdna.com';
-// var LOGDNA_APISSL = isNaN(process.env.USESSL) ? true : +process.env.USESSL;
-var LOGDNA_APISSL = false;
+var LOGDNA_APISSL = isNaN(process.env.USESSL) ? true : +process.env.USESSL;
 var SUPPORTS_COLORS = /^screen|^xterm|^vt100|color|ansi|cygwin|linux/i.test(process.env.TERM) && (!process.stdout || process.stdout.isTTY); // ensure console supports colors and not being piped
 
 var EMAIL_REGEX = /[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
@@ -117,6 +116,10 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                             if (body.keys && body.keys.length) { config.key = body.keys[0]; }
                             config.token = body.token;
 
+                            if (body.servicekeys && body.servicekeys.length) {
+                              config.servicekey = body.servicekeys[0];
+                            }
+
                             saveConfig(config, function() {
                                 log('Logged in successfully as: ' + email + '. Saving credentials to local config.');
                             });
@@ -208,24 +211,27 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
         program.command('orgs')
           .description('test endpoint')
           .action(function(options) {
-            // console.log(config);
             apiGet(config, 'orgs', {}, function(body) {
-            // var body = '[{"id":"996226df4b","name":"LogDNA"},{"id":"36667db7ce","name":"NX"}]';
               body = JSON.parse(body);
+              if (!(body && body.length)) {
+                log("API returned empty body");
+                return;
+              }
               for (var i = 0; i < body.length; i++) {
-                log("id: " + body[i].id + " name: " + body[i].name
+                log("(" + (i + 1) + ") " + "id: " + body[i].id + " name: " + body[i].name
                   + (body[i].id === config.account ? " (active)" : "") 
                 );
               };
-              input.required('Active org: ', function(selection) {
+              input.required('Select an active org (by number): ', function(selection) {
                 input.done();
                 selection = parseInt(selection);
-                console.log(selection);
+                selection = selection - 1;
                 if (selection >= body.length || selection < 0) {
                   log('Not a valid org number.');
                   return;
                 }
                 config.account = body[selection].id;
+                config.servicekey = body[selection].servicekeys[0];
                 saveConfig(config, function() {
                   log('Successfully set current org to ' + body[selection].name);
                 });
@@ -260,18 +266,34 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                     params.levels = options.levels.replace(/, /g, ',');
                 }
 
+                if (config.servicekey) {
+                  params.servicekey = config.servicekey;
+                }
+
+                var modifiedconfig = JSON.parse(JSON.stringify(config));
+
+                // this prevents export API from emailing the results
+                delete modifiedconfig["email"];
+
                 var t, t2, range;
 
-                apiGet(config, 'search', params, function(body) {
+                apiGet(modifiedconfig, 'v1/export', params, function(body) {
                     if (body.range && body.range.from && body.range.to) {
                         t = new Date(body.range.from);
                         t2 = new Date(body.range.to);
                         range = ' between ' + t.toString().substring(4, 11) + t.toString().substring(16, 24) + '-' + t2.toString().substring(4, 11) + t2.toString().substring(16, 24);
                     }
+                    if (typeof body === 'string') {
+                      body = body.split('\n');
+                      body = body.map(x => {
+                        try { return JSON.parse(x) } catch (err) { return 0; }
+                    });
+                      body = _.compact(body);
+                    }
 
-                    log('search finished: ' + body.lines.length + ' line(s)' + (range || '') + '. hosts: ' + (options.hosts || 'all') + '. apps: ' + (options.apps || 'all') + '. levels: ' + (options.levels || (options.debug ? 'all' : '-debug')) + '. query: ' + (query || 'none'));
+                    log('search finished: ' + body.length + ' line(s)' + (range || '') + '. hosts: ' + (options.hosts || 'all') + '. apps: ' + (options.apps || 'all') + '. levels: ' + (options.levels || (options.debug ? 'all' : '-debug')) + '. query: ' + (query || 'none'));
 
-                    _.each(body.lines, function(line) {
+                    _.each(body, function(line) {
                         t = new Date(line._ts);
                         renderLine(line);
                     });
@@ -371,7 +393,27 @@ function apiCall(config, endpoint, method, params, callback) {
     got((LOGDNA_APISSL ? 'https://' : 'http://') + LOGDNA_APIHOST + '/' + endpoint, opts)
     .then(res => {
         if (res.body && res.body.substring(0, 1) === '{') {
-            res.body = JSON.parse(res.body);
+            try {
+              var result = JSON.parse(res.body);
+              return callback(result);
+            } catch (err) {
+              // procedure for jsonl format
+              return callback(res.body);
+              /*
+              var results = res.body.split('\n');
+              results = results.map(x => {
+                try {
+                  return JSON.parse(x);
+                } catch (err) {
+                  return null;
+                }
+              });
+              // get rid of empty results (likely from the split)
+              results = _.compact(results);
+              var result = { lines : results };
+              return callback(result);
+              */
+            }
         }
         callback(res.body);
     })
