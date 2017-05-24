@@ -483,7 +483,7 @@ function renderLine(line) {
         log('\x1b[38;5;240m' + t.toString().substring(4, 11) + t.toString().substring(16, 24) +
             ' \x1b[38;5;166m' + line._host +
             ' \x1b[38;5;74m' + line._app +
-            ' ' + (line.level ? '[' + line.level + '] ' : '') +
+            ' ' + (line.level ? '\x1b[38;5;247;48;5;239m ' + line.level + ' \x1b[0m ' : '') +
             '\x1b[38;5;246m' + line._line +
             '\x1b[0m');
 
