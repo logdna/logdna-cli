@@ -23,7 +23,7 @@ var LOGDNA_APIHOST = process.env.LDAPIHOST || 'api.logdna.com';
 var LOGDNA_APISSL = isNaN(process.env.USESSL) ? true : +process.env.USESSL;
 var SUPPORTS_COLORS = /^screen|^xterm|^vt100|color|ansi|cygwin|linux/i.test(process.env.TERM) && (!process.stdout || process.stdout.isTTY); // ensure console supports colors and not being piped
 
-var EMAIL_REGEX = /[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+var EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
 
 process.title = 'logdna';
 program._name = 'logdna';
@@ -53,8 +53,9 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
             .action(function(email, key) {
                 var nextstep = function(email) {
                     email = email.toLowerCase();
-                    if (!EMAIL_REGEX.test(email))
+                    if (!EMAIL_REGEX.test(email)) {
                         return log('Invalid email address');
+                    }
 
                     input.required('First name: ', function(firstname) {
                         input.required('Last name: ', function(lastname) {
@@ -104,8 +105,9 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                         input.done();
 
                         email = email.toLowerCase();
-                        if (!EMAIL_REGEX.test(email))
+                        if (!EMAIL_REGEX.test(email)) {
                             return log('Invalid email address');
+                        }
 
                         apiPost(config, 'login', { auth: email + ':' + password }, function(body) {
                             config.email = email;
@@ -117,7 +119,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                             config.token = body.token;
 
                             if (body.servicekeys && body.servicekeys.length) {
-                              config.servicekey = body.servicekeys[0];
+                                config.servicekey = body.servicekeys[0];
                             }
 
                             saveConfig(config, function() {
@@ -209,35 +211,35 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
             });
 
         program.command('orgs')
-          .description('test endpoint')
-          .action(function(options) {
-            apiGet(config, 'orgs', {}, function(body) {
-              body = JSON.parse(body);
-              if (!(body && body.length)) {
-                log("API returned empty body");
-                return;
-              }
-              for (var i = 0; i < body.length; i++) {
-                log("(" + (i + 1) + ") " + "id: " + body[i].id + " name: " + body[i].name
-                  + (body[i].id === config.account ? " (active)" : "") 
-                );
-              };
-              input.required('Select an active org (by number): ', function(selection) {
-                input.done();
-                selection = parseInt(selection);
-                selection = selection - 1;
-                if (selection >= body.length || selection < 0) {
-                  log('Not a valid org number.');
-                  return;
-                }
-                config.account = body[selection].id;
-                config.servicekey = body[selection].servicekeys[0];
-                saveConfig(config, function() {
-                  log('Successfully set current org to ' + body[selection].name);
+            .description('test endpoint')
+            .action(function(options) {
+                apiGet(config, 'orgs', {}, function(body) {
+                    body = JSON.parse(body);
+                    if (!(body && body.length)) {
+                        log('API returned empty body');
+                        return;
+                    }
+                    for (var i = 0; i < body.length; i++) {
+                        log('(' + (i + 1) + ') id: ' + body[i].id + ' name: ' + body[i].name +
+                            (body[i].id === config.account ? ' (active)' : '')
+                        );
+                    };
+                    input.required('Select an active org (by number): ', function(selection) {
+                        input.done();
+                        selection = parseInt(selection);
+                        selection = selection - 1;
+                        if (selection >= body.length || selection < 0) {
+                            log('Not a valid org number.');
+                            return;
+                        }
+                        config.account = body[selection].id;
+                        config.servicekey = body[selection].servicekeys[0];
+                        saveConfig(config, function() {
+                            log('Successfully set current org to ' + body[selection].name);
+                        });
+                    });
                 });
-              });
             });
-          });
 
         program.command('search [query]')
             .description('Limited search functionality with optional filtering (beta). See \'logdna search --help\'')
@@ -245,6 +247,11 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
             .option('-h, --hosts <hosts>', 'Filter on hosts (separate by comma)')
             .option('-a, --apps <apps>', 'Filter on apps (separate by comma)')
             .option('-l, --levels <levels>', 'Filter on levels (separate by comma)')
+            .option('-n, --number <number>', 'Set how many lines to request')
+            .option('--prefer-head', 'Get lines from the beginning of the interval rather than the end')
+            .option('--next', 'Get next chunk of lines (after last search). This is a convenience wrapper around the --from and --to parameters.')
+            .option('-f, --from <from>', 'Unix timestamp of beginning of search timeframe.')
+            .option('-t, --to <to>', 'Unix timestamp of end of search timeframe.')
             .action(function(query, options) {
                 var params = {
                     q: query || ''
@@ -252,6 +259,42 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
 
                 if (!options.debug) {
                     params.q += ' level:-debug';
+                }
+
+                if (options.preferHead) {
+                    params.prefer = 'head';
+                }
+
+                if (options.from) {
+                    try {
+                        params.from = new Date(options.from).getTime();
+                    } catch (err) {
+                    }
+                }
+
+                if (options.to) {
+                    try {
+                        params.to = new Date(options.to).getTime();
+                    } catch (err) {
+                    }
+                }
+
+                if (options.next) {
+                    // use last search timestamps to get next block of results
+                    if (config.last_timestamp) {
+                        if (options.preferHead) {
+                            params.from = new Date(config.last_timestamp).getTime();
+                        } else {
+                            params.to = new Date(config.last_timestamp).getTime();
+                        }
+                    }
+                }
+
+                if (options.number) {
+                    try {
+                        params.size = parseInt(options.number);
+                    } catch (err) {
+                    }
                 }
 
                 if (options.hosts) {
@@ -267,13 +310,13 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                 }
 
                 if (config.servicekey) {
-                  params.servicekey = config.servicekey;
+                    params.servicekey = config.servicekey;
                 }
 
                 var modifiedconfig = JSON.parse(JSON.stringify(config));
 
                 // this prevents export API from emailing the results
-                delete modifiedconfig["email"];
+                delete modifiedconfig.email;
 
                 var t, t2, range;
 
@@ -284,27 +327,48 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                         range = ' between ' + t.toString().substring(4, 11) + t.toString().substring(16, 24) + '-' + t2.toString().substring(4, 11) + t2.toString().substring(16, 24);
                     }
                     if (typeof body === 'string') {
-                      body = body.split('\n');
-                      body = body.map(x => {
-                        try { return JSON.parse(x) } catch (err) { return 0; }
-                    });
-                      body = _.compact(body);
+                        body = body.split('\n');
+                        body = body.map(x => {
+                            try { return JSON.parse(x); } catch (err) { return 0; }
+                        });
+                        body = _.compact(body);
                     }
+
 
                     log('search finished: ' + body.length + ' line(s)' + (range || '') + '. hosts: ' + (options.hosts || 'all') + '. apps: ' + (options.apps || 'all') + '. levels: ' + (options.levels || (options.debug ? 'all' : '-debug')) + '. query: ' + (query || 'none'));
 
+                    if (!(body && body.length)) {
+                        log('Query returned no lines.');
+                        return;
+                    }
+                    var last_timestamp = new Date(body[0]._ts);
+
                     _.each(body, function(line) {
                         t = new Date(line._ts);
+                        if (options.preferHead) {
+                            if (last_timestamp < t) {
+                                last_timestamp = t;
+                            }
+                        } else {
+                            if (last_timestamp > t) {
+                                last_timestamp = t;
+                            }
+                        }
+
                         renderLine(line);
                     });
+
+                    config.last_timestamp = last_timestamp.toJSON();
+                    saveConfig(config);
                 });
             });
 
         program.command('heroku <heroku-app-name>')
             .description('Generates a Heroku Drain URL for log shipping to LogDNA')
             .action(function(app) {
-                if (!config.token)
+                if (!config.token) {
                     return log('Please login first. Type \'logdna login\' or \'logdna --help\' for more info.');
+                }
 
                 log('Use the following Heroku CLI command to start log shipping:');
                 log('heroku drains:add https://' + config.account + ':' + (config.key || 'YOUR_INGESTION_KEY_HERE') + '@heroku.logdna.com/heroku/logplex?app=' + app + ' --app ' + app);
@@ -394,25 +458,11 @@ function apiCall(config, endpoint, method, params, callback) {
     .then(res => {
         if (res.body && res.body.substring(0, 1) === '{') {
             try {
-              var result = JSON.parse(res.body);
-              return callback(result);
+                var result = JSON.parse(res.body);
+                return callback(result);
             } catch (err) {
-              // procedure for jsonl format
-              return callback(res.body);
-              /*
-              var results = res.body.split('\n');
-              results = results.map(x => {
-                try {
-                  return JSON.parse(x);
-                } catch (err) {
-                  return null;
-                }
-              });
-              // get rid of empty results (likely from the split)
-              results = _.compact(results);
-              var result = { lines : results };
-              return callback(result);
-              */
+                // procedure for jsonl format
+                return callback(res.body);
             }
         }
         callback(res.body);
@@ -449,9 +499,9 @@ function authParams(config) {
     }
 
     var hmacParams = {
-        email: config.email,
-        id: config.account,
-        ts: Date.now()
+        email: config.email
+        , id: config.account
+        , ts: Date.now()
     };
 
     hmacParams.hmac = generateHmac(hmacParams, config.token);
@@ -474,7 +524,9 @@ function performUpgrade(config, force, callback) {
         }
 
         if (force) { log('Checking for updates...'); }
-        got(UPDATE_CHECK_URL, { timeout: (force ? 30000 : 2500) })
+        var force_timeout_ms = 30000;
+        var default_timeout_ms = 2500;
+        got(UPDATE_CHECK_URL, { timeout: (force ? force_timeout_ms : default_timeout_ms) })
         .then(res => {
             if (res.body) { res.body = res.body.replace(/\r/g, '').replace(/\n/g, ''); }
             if (!semver.valid(res.body)) {
@@ -490,8 +542,8 @@ function performUpgrade(config, force, callback) {
             if (semver.gt(res.body, pkg.version)) {
                 // update needed
                 log('Performing upgrade from ' + pkg.version + ' to ' + res.body + '...');
-                var shell = spawn('/bin/bash', ['-c',
-                    'if [[ ! -z $(which curl) ]]; then curl -so /tmp/logdna.gz ' + UPDATE_UPDATE_URL + '; elif [[ ! -z $(which wget) ]]; then wget -qO /tmp/logdna.gz ' + UPDATE_UPDATE_URL + '; fi; gunzip -f /tmp/logdna.gz; cp -f /tmp/logdna /usr/local/logdna/bin/logdna; chmod 777 /usr/local/logdna/bin/logdna 2> /dev/null; echo -n "Successfully upgraded logdna-cli to "; /usr/local/bin/logdna -v'
+                var shell = spawn('/bin/bash', ['-c'
+                    , 'if [[ ! -z $(which curl) ]]; then curl -so /tmp/logdna.gz ' + UPDATE_UPDATE_URL + '; elif [[ ! -z $(which wget) ]]; then wget -qO /tmp/logdna.gz ' + UPDATE_UPDATE_URL + '; fi; gunzip -f /tmp/logdna.gz; cp -f /tmp/logdna /usr/local/logdna/bin/logdna; chmod 777 /usr/local/logdna/bin/logdna 2> /dev/null; echo -n "Successfully upgraded logdna-cli to "; /usr/local/bin/logdna -v'
                 ], { stdio: 'inherit' });
                 shell.on('close', function() {
                     if (!force && process.argv[process.argv.length - 1].toLowerCase() !== 'update') {
