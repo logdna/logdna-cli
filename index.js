@@ -212,32 +212,30 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                 });
             });
 
-        program.command('orgs')
-            .description('test endpoint')
+        program.command('switch')
+            .description('Switch between multiple accounts if your login has access to more than one')
             .action(function(options) {
                 apiGet(config, 'orgs', {}, function(body) {
                     body = JSON.parse(body);
-                    if (!(body && body.length)) {
-                        log('API returned empty body');
+                    if (!body || (body.length && body.length < 2)) {
+                        log('Your login ' + config.email + ' doesn\'t belong to other accounts. Ensure the other owner has added your email.');
                         return;
                     }
                     for (var i = 0; i < body.length; i++) {
-                        log('(' + (i + 1) + ') id: ' + body[i].id + ' name: ' + body[i].name +
-                            (body[i].id === config.account ? ' (active)' : '')
-                        );
-                    };
-                    input.required('Select an active org (by number): ', function(selection) {
+                        log((i + 1) + ': ' + body[i].name + (body[i].id === config.account ? ' (active)' : ''));
+                    }
+                    input.required('Choose account [1-' + body.length + ']: ', function(selection) {
                         input.done();
                         selection = parseInt(selection);
                         selection = selection - 1;
                         if (selection >= body.length || selection < 0) {
-                            log('Not a valid org number.');
+                            log('Not a valid number.');
                             return;
                         }
                         config.account = body[selection].id;
                         config.servicekey = body[selection].servicekeys[0];
                         saveConfig(config, function() {
-                            log('Successfully set current org to ' + body[selection].name);
+                            log('Successfully switched account to ' + body[selection].name);
                         });
                     });
                 });
