@@ -24,6 +24,8 @@ var LOGDNA_APISSL = isNaN(process.env.USESSL) ? true : +process.env.USESSL;
 var SUPPORTS_COLORS = /^screen|^xterm|^vt100|color|ansi|cygwin|linux/i.test(process.env.TERM) && (!process.stdout || process.stdout.isTTY); // ensure console supports colors and not being piped
 
 var EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+var ERROR_LEVEL_TEST = /[Ee]rr(?:or)?|ERR(?:OR)?|[Cc]rit(?:ical)?|CRIT(?:ICAL)?|[Ff]atal|FATAL|[Ss]evere|SEVERE|EMERG(?:ENCY)?|[Ee]merg(?:ency)?/;
+var WARN_LEVEL_TEST = /[Ww]arn(?:ing)?|WARN(?:ING)?/;
 
 process.title = 'logdna';
 program._name = 'logdna';
@@ -483,12 +485,22 @@ function renderLine(line) {
         log('\x1b[38;5;240m' + t.toString().substring(4, 11) + t.toString().substring(16, 24) +
             ' \x1b[38;5;166m' + line._host +
             ' \x1b[38;5;74m' + line._app +
-            ' ' + (line.level ? '\x1b[38;5;247;48;5;239m ' + line.level + ' \x1b[0m ' : '') +
+            ' ' + (line.level ? levelColor(line.level) + ' ' + line.level + ' \x1b[0m ' : '') +
             '\x1b[38;5;246m' + line._line +
             '\x1b[0m');
 
     } else {
         log(t.toString().substring(4, 11) + t.toString().substring(16, 24) + ' ' + line._host + ' ' + line._app + ' ' + (line.level ? '[' + line.level + '] ' : '') + line._line);
+    }
+}
+
+function levelColor(level) {
+    if (ERROR_LEVEL_TEST.test(level)) {
+        return '\x1b[38;5;255;48;5;203m';
+    } else if (WARN_LEVEL_TEST.test(level)) {
+        return '\x1b[38;5;255;48;5;208m';
+    } else {
+        return '\x1b[38;5;247;48;5;239m';
     }
 }
 
