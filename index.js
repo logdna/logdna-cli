@@ -146,6 +146,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
             .option('-h, --hosts <hosts>', 'Filter on hosts (separate by comma)')
             .option('-a, --apps <apps>', 'Filter on apps (separate by comma)')
             .option('-l, --levels <levels>', 'Filter on levels (separate by comma)')
+            .option('-j, --json', 'if true, output raw json', false)
             .action(function(query, options) {
                 var params = authParams(config);
                 params.q = query || '';
@@ -164,6 +165,10 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
 
                 if (options.levels) {
                     params.levels = options.levels.replace(/, /g, ',');
+                }
+
+                if (options.json) {
+                    params.json = true;
                 }
 
                 params.q = params.q.trim();
@@ -188,11 +193,11 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
 
                     if (Array.isArray(data.p)) {
                         _.each(data.p, function(line) {
-                            renderLine(line);
+                            renderLine(line, params);
                         });
 
                     } else {
-                        renderLine(data.p);
+                        renderLine(data.p, params);
                     }
                 });
 
@@ -252,6 +257,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
             .option('--next', 'Get next chunk of lines (after last search). This is a convenience wrapper around the --from and --to parameters.')
             .option('-f, --from <from>', 'Unix timestamp of beginning of search timeframe.')
             .option('-t, --to <to>', 'Unix timestamp of end of search timeframe.')
+            .option('-j, --json', 'if true, output raw json', false)
             .action(function(query, options) {
                 var params = {
                     q: query || ''
@@ -295,6 +301,10 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                         params.size = parseInt(options.number);
                     } catch (err) {
                     }
+                }
+
+                if (options.json) {
+                    params.json = true;
                 }
 
                 if (options.hosts) {
@@ -355,7 +365,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                             }
                         }
 
-                        renderLine(line);
+                        renderLine(line, params);
                     });
 
                     config.last_timestamp = last_timestamp.toJSON();
@@ -476,8 +486,15 @@ function apiCall(config, endpoint, method, params, callback) {
     });
 }
 
-function renderLine(line) {
+function renderLine(line, params) {
     var t = new Date(line._ts);
+    params = params || {};
+
+    if (params.json) {
+        var buf = JSON.stringify(line);
+        console.log(buf);
+        return;
+    }
 
     if (SUPPORTS_COLORS) {
         log('\x1b[38;5;240m' + t.toString().substring(4, 11) + t.toString().substring(16, 24) +
