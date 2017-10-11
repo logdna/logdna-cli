@@ -79,9 +79,14 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                                     if (config.account !== body.account) {
                                         config.account = body.account;
                                         config.token = null;
+                                        config.servicekey = null;
                                     }
                                     config.key = body.key;
                                     if (body.token) { config.token = body.token; } // save token if available
+
+                                    if (body.servicekeys && body.servicekeys.length) {
+                                        config.servicekey = body.servicekeys[0];
+                                    }
 
                                     saveConfig(config, function() {
                                         log('Thank you for signing up! Your Ingestion Key is: ' + body.key + '. Saving credentials to local config.');
