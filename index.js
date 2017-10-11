@@ -219,7 +219,10 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                 var ws = new WebSocket((LOGDNA_APISSL ? 'https://' : 'http://') + LOGDNA_APIHOST + '/ws/tail?' + qs.stringify(params));
 
                 ws.on('open', function open() {
-                    log('tail started. hosts: ' + (options.hosts || 'all') + '. apps: ' + (options.apps || 'all') + '. levels: ' + (options.levels || (options.debug ? 'all' : '-debug')) + '. query: ' + (query || 'none'));
+                    log('tail started. hosts: ' + (options.hosts || 'all') +
+                        '. apps: ' + (options.apps || 'all') +
+                        '. levels: ' + (options.levels || (options.debug ? 'all' : '-debug')) +
+                        '. query: ' + (query || 'none'));
                 });
 
                 ws.on('reconnecting', function(num) {
@@ -377,7 +380,8 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                     if (body.range && body.range.from && body.range.to) {
                         t = new Date(body.range.from);
                         t2 = new Date(body.range.to);
-                        range = ' between ' + t.toString().substring(4, 11) + t.toString().substring(16, 24) + '-' + t2.toString().substring(4, 11) + t2.toString().substring(16, 24);
+                        range = ' between ' + t.toString().substring(4, 11) + t.toString().substring(16, 24) +
+                            '-' + t2.toString().substring(4, 11) + t2.toString().substring(16, 24);
                     }
                     if (typeof body === 'string') {
                         body = body.split('\n');
@@ -388,7 +392,11 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                     }
 
 
-                    log('search finished: ' + body.length + ' line(s)' + (range || '') + '. hosts: ' + (options.hosts || 'all') + '. apps: ' + (options.apps || 'all') + '. levels: ' + (options.levels || (options.debug ? 'all' : '-debug')) + '. query: ' + (query || 'none'));
+                    log('search finished: ' + body.length + ' line(s)' + (range || '') +
+                        '. hosts: ' + (options.hosts || 'all') +
+                        '. apps: ' + (options.apps || 'all') +
+                        '. levels: ' + (options.levels || (options.debug ? 'all' : '-debug')) +
+                        '. query: ' + (query || 'none'));
 
                     if (!(body && body.length)) {
                         log('Query returned no lines.');
@@ -548,7 +556,11 @@ function renderLine(line, params) {
             '\x1b[0m');
 
     } else {
-        log(t.toString().substring(4, 11) + t.toString().substring(16, 24) + ' ' + line._host + ' ' + line._app + ' ' + (line.level ? '[' + line.level + '] ' : '') + line._line);
+        log(t.toString().substring(4, 11) + t.toString().substring(16, 24) +
+            ' ' + line._host +
+            ' ' + line._app +
+            ' ' + (line.level ? '[' + line.level + '] ' : '') +
+            line._line);
     }
 }
 
