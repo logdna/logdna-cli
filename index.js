@@ -18,6 +18,8 @@ var spawn = require('child_process').spawn;
 var UPDATE_CHECK_URL = 'http://repo.logdna.com/PLATFORM/version';
 var UPDATE_UPDATE_URL = 'http://repo.logdna.com/PLATFORM/logdna.gz';
 var UPDATE_CHECK_INTERVAL = 86400000; // 1 day
+var SSO_URL = 'https://logdna.com/sso/';
+var SSO_POLL_INTERVAL = 5000; // 5s
 var DEFAULT_CONF_FILE = '~/.logdna.conf'.replace('~', process.env.HOME || process.env.USERPROFILE);
 var LOGDNA_APIHOST = process.env.LDAPIHOST || 'api.logdna.com';
 var LOGDNA_APISSL = isNaN(process.env.USESSL) ? true : +process.env.USESSL;
@@ -65,7 +67,14 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                                 input.done();
 
                                 key = (key || '').toLowerCase();
-                                apiPost(config, 'register', { auth: false, email: email, key: key, firstname: firstname, lastname: lastname, company: company }, function(body) {
+                                apiPost(config, 'register', {
+                                    auth: false
+                                    , email: email
+                                    , key: key
+                                    , firstname: firstname
+                                    , lastname: lastname
+                                    , company: company
+                                }, function(body) {
                                     config.email = email;
                                     if (config.account !== body.account) {
                                         config.account = body.account;
@@ -97,6 +106,40 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                         nextstep(email);
                     });
                 }
+            });
+
+        program.command('ssologin')
+            .description('Login to a LogDNA user account via Single Signon')
+            .action(function() {
+                var token = _.random(800000000, 4000000000).toString(16);
+                var pollTimeout;
+
+                log('To sign in via SSO, use a web browser to open the page ' + SSO_URL + token);
+
+                var pollToken = function() {
+                    apiPost(config, 'sso', { auth: false, token: token }, function(body) {
+                        if (!body || !body.email) return;
+                        clearTimeout(pollTimeout);
+
+                        config.email = body.email;
+                        if (body.accounts.length && config.account !== body.accounts[0]) {
+                            config.account = body.accounts[0];
+                            config.key = null;
+                        }
+                        if (body.keys && body.keys.length) { config.key = body.keys[0]; }
+                        config.token = body.token;
+
+                        if (body.servicekeys && body.servicekeys.length) {
+                            config.servicekey = body.servicekeys[0];
+                        }
+
+                        saveConfig(config, function() {
+                            log('Logged in successfully as: ' + body.email + '. Saving credentials to local config.');
+                        });
+                    });
+                    pollTimeout = setTimeout(pollToken, SSO_POLL_INTERVAL);
+                };
+                pollToken(); // kick off polling
             });
 
         program.command('login [email]')
@@ -465,25 +508,25 @@ function apiCall(config, endpoint, method, params, callback) {
     if (method === 'post') { opts.method = 'post'; }
 
     got((LOGDNA_APISSL ? 'https://' : 'http://') + LOGDNA_APIHOST + '/' + endpoint, opts)
-    .then(res => {
-        if (res.body && res.body.substring(0, 1) === '{') {
-            try {
-                var result = JSON.parse(res.body);
-                return callback(result);
-            } catch (err) {
-                // procedure for jsonl format
-                return callback(res.body);
+        .then(res => {
+            if (res.body && res.body.substring(0, 1) === '{') {
+                try {
+                    var result = JSON.parse(res.body);
+                    return callback(result);
+                } catch (err) {
+                    // procedure for jsonl format
+                    return callback(res.body);
+                }
             }
-        }
-        callback(res.body);
-    })
-    .catch(err => {
-        if (err.statusCode === '403') {
-            return log('Access token invalid. If you created or changed your password recently, please \'logdna login\' again. Type \'logdna --help\' for more info.');
-        } else {
-            return log('Error ' + err.statusCode + ': ' + err.response.body);
-        }
-    });
+            callback(res.body);
+        })
+        .catch(err => {
+            if (err.statusCode === '403') {
+                return log('Access token invalid. If you created or changed your password recently, please \'logdna login\' again. Type \'logdna --help\' for more info.');
+            } else {
+                return log('Error ' + err.statusCode + ': ' + err.response.body);
+            }
+        });
 }
 
 function renderLine(line, params) {
@@ -548,45 +591,50 @@ function performUpgrade(config, force, callback) {
         } else if (os.platform() === 'linux') {
             UPDATE_CHECK_URL = UPDATE_CHECK_URL.replace('PLATFORM', 'linux');
             UPDATE_UPDATE_URL = UPDATE_UPDATE_URL.replace('PLATFORM', 'linux');
+
+        } else if (os.platform() === 'win32') {
+            // UPDATE_CHECK_URL = UPDATE_CHECK_URL.replace("PLATFORM", "windows");
+            // UPDATE_UPDATE_URL = UPDATE_UPDATE_URL.replace("PLATFORM", "windows");
+            return callback && callback(); // ignore for now until this works
         }
 
         if (force) { log('Checking for updates...'); }
         var force_timeout_ms = 30000;
         var default_timeout_ms = 2500;
         got(UPDATE_CHECK_URL, { timeout: (force ? force_timeout_ms : default_timeout_ms) })
-        .then(res => {
-            if (res.body) { res.body = res.body.replace(/\r/g, '').replace(/\n/g, ''); }
-            if (!semver.valid(res.body)) {
-                // error during update check, set to check again in a day
-                config.updatecheck = Date.now() - UPDATE_CHECK_INTERVAL + 86400000;
+            .then(res => {
+                if (res.body) { res.body = res.body.replace(/\r/g, '').replace(/\n/g, ''); }
+                if (!semver.valid(res.body)) {
+                    // error during update check, set to check again in a day
+                    config.updatecheck = Date.now() - UPDATE_CHECK_INTERVAL + 86400000;
+                    saveConfig(config);
+                    return callback && callback();
+                }
+
+                config.updatecheck = Date.now();
                 saveConfig(config);
-                return callback && callback();
-            }
 
-            config.updatecheck = Date.now();
-            saveConfig(config);
+                if (semver.gt(res.body, pkg.version)) {
+                    // update needed
+                    log('Performing upgrade from ' + pkg.version + ' to ' + res.body + '...');
+                    var shell = spawn('/bin/bash', ['-c'
+                        , 'if [[ ! -z $(which curl) ]]; then curl -so /tmp/logdna.gz ' + UPDATE_UPDATE_URL + '; elif [[ ! -z $(which wget) ]]; then wget -qO /tmp/logdna.gz ' + UPDATE_UPDATE_URL + '; fi; gunzip -f /tmp/logdna.gz; cp -f /tmp/logdna /usr/local/logdna/bin/logdna; chmod 777 /usr/local/logdna/bin/logdna 2> /dev/null; echo -n "Successfully upgraded logdna-cli to "; /usr/local/bin/logdna -v'
+                    ], { stdio: 'inherit' });
+                    shell.on('close', function() {
+                        if (!force && process.argv[process.argv.length - 1].toLowerCase() !== 'update') {
+                            log('Please run your command again');
+                        }
+                    });
+                    return;
 
-            if (semver.gt(res.body, pkg.version)) {
-                // update needed
-                log('Performing upgrade from ' + pkg.version + ' to ' + res.body + '...');
-                var shell = spawn('/bin/bash', ['-c'
-                    , 'if [[ ! -z $(which curl) ]]; then curl -so /tmp/logdna.gz ' + UPDATE_UPDATE_URL + '; elif [[ ! -z $(which wget) ]]; then wget -qO /tmp/logdna.gz ' + UPDATE_UPDATE_URL + '; fi; gunzip -f /tmp/logdna.gz; cp -f /tmp/logdna /usr/local/logdna/bin/logdna; chmod 777 /usr/local/logdna/bin/logdna 2> /dev/null; echo -n "Successfully upgraded logdna-cli to "; /usr/local/bin/logdna -v'
-                ], { stdio: 'inherit' });
-                shell.on('close', function() {
-                    if (!force && process.argv[process.argv.length - 1].toLowerCase() !== 'update') {
-                        log('Please run your command again');
-                    }
-                });
-                return;
-
-            } else {
-                // no update necessary, run rest of program
-                return callback && callback();
-            }
-        })
-        .catch(err => {
-            return log('Error ' + err.statusCode + ': ' + err.response.body);
-        });
+                } else {
+                    // no update necessary, run rest of program
+                    return callback && callback();
+                }
+            })
+            .catch(err => {
+                return log('Error ' + err.statusCode + ': ' + err.response.body);
+            });
 
     } else {
         // no check necessary, run rest of program
