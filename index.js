@@ -311,11 +311,11 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
             .option('-j, --json', 'if true, output raw json', false)
             .action(function(query, options) {
                 var params = {
-                    q: query || ''
+                    query: query || ''
                 };
 
                 if (!options.debug) {
-                    params.q += ' level:-debug';
+                    params.query += ' level:-debug';
                 }
 
                 if (options.preferHead) {
