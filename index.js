@@ -557,7 +557,7 @@ function renderLine(line, params) {
             ' \x1b[38;5;166m' + line._host +
             ' \x1b[38;5;74m' + line._app +
             ' ' + (line.level ? levelColor(line.level) + ' ' + line.level + ' \x1b[0m ' : '') +
-            '\x1b[38;5;246m' + line._line +
+            '\x1b[38;5;246m' + line.message +
             '\x1b[0m');
 
     } else {
@@ -565,7 +565,7 @@ function renderLine(line, params) {
             ' ' + line._host +
             ' ' + line._app +
             ' ' + (line.level ? '[' + line.level + '] ' : '') +
-            line._line);
+            line.message);
     }
 }
 
