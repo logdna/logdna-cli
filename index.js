@@ -22,6 +22,7 @@ var SSO_URL = 'https://logdna.com/sso/';
 var SSO_POLL_INTERVAL = 5000; // 5s
 var DEFAULT_CONF_FILE = '~/.logdna.conf'.replace('~', process.env.HOME || process.env.USERPROFILE);
 var LOGDNA_APIHOST = process.env.LDAPIHOST || 'api.logdna.com';
+var LOGDNA_TAILHOST = process.env.LDTAILHOST || 'tail.logdna.com';
 var LOGDNA_APISSL = isNaN(process.env.USESSL) ? true : +process.env.USESSL;
 var SUPPORTS_COLORS = /^screen|^xterm|^vt100|color|ansi|cygwin|linux/i.test(process.env.TERM) && (!process.stdout || process.stdout.isTTY); // ensure console supports colors and not being piped
 
@@ -221,7 +222,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
 
                 params.q = params.q.trim();
 
-                var ws = new WebSocket((LOGDNA_APISSL ? 'https://' : 'http://') + LOGDNA_APIHOST + '/ws/tail?' + qs.stringify(params));
+                var ws = new WebSocket((LOGDNA_APISSL ? 'https://' : 'http://') + LOGDNA_TAILHOST + '/ws/tail?' + qs.stringify(params));
 
                 ws.on('open', function open() {
                     log('tail started. hosts: ' + (options.hosts || 'all') +
