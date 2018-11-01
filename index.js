@@ -29,6 +29,13 @@ program
         log('    $ logdna tail \'("timed out" OR "connection refused") -request\'');
         log('    $ logdna tail -a access.log 500');
         log('    $ logdna tail -l error,warn');
+        log('    $ logdna search "logdna" -a logdna.log 300');
+        log('    $ logdna search "logdna" -f 1541100040931 -t 1541102940000');
+        log('    $ logdna login user@example.com');
+        log('    $ logdna install syslog');
+        log('    $ logdna install k8s');
+        log('    $ logdna info');
+        log('    $ logdna update');
         log();
     });
 
