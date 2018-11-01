@@ -1,34 +1,20 @@
 #!/usr/bin/env node
+const _ = require('lodash');
+const program = require('commander');
+const properties = require('properties');
+const got = require('got');
+const semver = require('semver');
+const os = require('os');
+const qs = require('querystring');
+const crypto = require('crypto');
+const spawn = require('child_process').spawn;
 
-var program = require('commander');
-var pkg = require('./package.json');
-var properties = require('properties');
-var _ = require('lodash');
+const pkg = require('./package.json');
 /* jshint ignore:start */
-var WebSocket = require('./lib/logdna-websocket');
+const WebSocket = require('./lib/logdna-websocket');
 /* jshint ignore:end */
-var got = require('got');
-var input = require('./lib/input');
-var semver = require('semver');
-var os = require('os');
-var qs = require('querystring');
-var crypto = require('crypto');
-var spawn = require('child_process').spawn;
-
-var UPDATE_CHECK_URL = 'http://repo.logdna.com/PLATFORM/version';
-var UPDATE_UPDATE_URL = 'http://repo.logdna.com/PLATFORM/logdna.gz';
-var UPDATE_CHECK_INTERVAL = 86400000; // 1 day
-var SSO_URL = 'https://logdna.com/sso/';
-var SSO_POLL_INTERVAL = 5000; // 5s
-var DEFAULT_CONF_FILE = '~/.logdna.conf'.replace('~', process.env.HOME || process.env.USERPROFILE);
-var LOGDNA_APIHOST = process.env.LDAPIHOST || 'api.logdna.com';
-var LOGDNA_TAILHOST = process.env.LDTAILHOST || 'tail.logdna.com';
-var LOGDNA_APISSL = isNaN(process.env.USESSL) ? true : +process.env.USESSL;
-var SUPPORTS_COLORS = /^screen|^xterm|^vt100|color|ansi|cygwin|linux/i.test(process.env.TERM) && (!process.stdout || process.stdout.isTTY); // ensure console supports colors and not being piped
-
-var EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
-var ERROR_LEVEL_TEST = /[Ee]rr(?:or)?|ERR(?:OR)?|[Cc]rit(?:ical)?|CRIT(?:ICAL)?|[Ff]atal|FATAL|[Ss]evere|SEVERE|EMERG(?:ENCY)?|[Ee]merg(?:ency)?/;
-var WARN_LEVEL_TEST = /[Ww]arn(?:ing)?|WARN(?:ING)?/;
+const input = require('./lib/input');
+var config = require('./lib/config');
 
 process.title = 'logdna';
 program._name = 'logdna';
@@ -49,8 +35,10 @@ program
 
 var ua = program._name + '-cli/' + pkg.version;
 
-properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
-    config = config || {};
+properties.parse(config.DEFAULT_CONF_FILE, {
+    path: true
+}, function(error, parsedConfig) {
+    config = _.merge(config, parsedConfig || {});
 
     performUpgrade(config, function() {
         program.command('register [email] [key]')
@@ -58,7 +46,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
             .action(function(email, key) {
                 var nextstep = function(email) {
                     email = email.toLowerCase();
-                    if (!EMAIL_REGEX.test(email)) {
+                    if (!config.EMAIL_REGEX.test(email)) {
                         return log('Invalid email address');
                     }
 
@@ -120,8 +108,6 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                 var token = _.random(800000000, 4000000000).toString(16);
                 var pollTimeout;
 
-                log('To sign in via SSO, use a web browser to open the page ' + SSO_URL + token);
-
                 var pollToken = function() {
                     apiPost(config, 'sso', { auth: false, token: token }, function(body) {
                         if (!body || !body.email) return;
@@ -143,7 +129,6 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                             log('Logged in successfully as: ' + body.email + '. Saving credentials to local config.');
                         });
                     });
-                    pollTimeout = setTimeout(pollToken, SSO_POLL_INTERVAL);
                 };
                 pollToken(); // kick off polling
             });
@@ -156,7 +141,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
                         input.done();
 
                         email = email.toLowerCase();
-                        if (!EMAIL_REGEX.test(email)) {
+                        if (!config.EMAIL_REGEX.test(email)) {
                             return log('Invalid email address');
                         }
 
@@ -222,7 +207,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
 
                 params.q = params.q.trim();
 
-                var ws = new WebSocket((LOGDNA_APISSL ? 'https://' : 'http://') + LOGDNA_TAILHOST + '/ws/tail?' + qs.stringify(params));
+                var ws = new WebSocket((config.LOGDNA_APISSL ? 'https://' : 'http://') + config.LOGDNA_TAILHOST + '/ws/tail?' + qs.stringify(params));
 
                 ws.on('open', function open() {
                     log('tail started. hosts: ' + (options.hosts || 'all') +
@@ -521,7 +506,7 @@ function apiCall(config, endpoint, method, params, callback) {
 
     if (method === 'post') { opts.method = 'post'; }
 
-    got((LOGDNA_APISSL ? 'https://' : 'http://') + LOGDNA_APIHOST + '/' + endpoint, opts)
+    got((config.LOGDNA_APISSL ? 'https://' : 'http://') + config.LOGDNA_APIHOST + '/' + endpoint, opts)
         .then(res => {
             if (res.body && res.body.substring(0, 1) === '{') {
                 try {
@@ -553,7 +538,7 @@ function renderLine(line, params) {
         return;
     }
 
-    if (SUPPORTS_COLORS) {
+    if (config.SUPPORTS_COLORS) {
         log('\x1b[38;5;240m' + t.toString().substring(4, 11) + t.toString().substring(16, 24) +
             ' \x1b[38;5;166m' + line._host +
             ' \x1b[38;5;74m' + line._app +
@@ -571,9 +556,9 @@ function renderLine(line, params) {
 }
 
 function levelColor(level) {
-    if (ERROR_LEVEL_TEST.test(level)) {
+    if (config.ERROR_LEVEL_TEST.test(level)) {
         return '\x1b[38;5;255;48;5;203m';
-    } else if (WARN_LEVEL_TEST.test(level)) {
+    } else if (config.WARN_LEVEL_TEST.test(level)) {
         return '\x1b[38;5;255;48;5;208m';
     } else {
         return '\x1b[38;5;247;48;5;239m';
@@ -601,30 +586,30 @@ function performUpgrade(config, force, callback) {
         callback = force;
         force = null;
     }
-    if (force || Date.now() - (config.updatecheck || 0) > UPDATE_CHECK_INTERVAL) {
+    if (force || Date.now() - (config.updatecheck || 0) > config.UPDATE_CHECK_INTERVAL) {
         if (os.platform() === 'darwin') {
-            UPDATE_CHECK_URL = UPDATE_CHECK_URL.replace('PLATFORM', 'mac');
-            UPDATE_UPDATE_URL = UPDATE_UPDATE_URL.replace('PLATFORM', 'mac');
+            config.VERSION_CHECK_URL = config.VERSION_CHECK_URL.replace('PLATFORM', 'mac');
+            config.UPDATE_CHECK_URL = config.UPDATE_CHECK_URL.replace('PLATFORM', 'mac');
 
         } else if (os.platform() === 'linux') {
-            UPDATE_CHECK_URL = UPDATE_CHECK_URL.replace('PLATFORM', 'linux');
-            UPDATE_UPDATE_URL = UPDATE_UPDATE_URL.replace('PLATFORM', 'linux');
+            config.VERSION_CHECK_URL = config.VERSION_CHECK_URL.replace('PLATFORM', 'linux');
+            config.UPDATE_CHECK_URL = config.UPDATE_CHECK_URL.replace('PLATFORM', 'linux');
 
         } else if (os.platform() === 'win32') {
-            // UPDATE_CHECK_URL = UPDATE_CHECK_URL.replace("PLATFORM", "windows");
-            // UPDATE_UPDATE_URL = UPDATE_UPDATE_URL.replace("PLATFORM", "windows");
+            // config.VERSION_CHECK_URL = config.VERSION_CHECK_URL.replace("PLATFORM", "windows");
+            // config.UPDATE_CHECK_URL = config.UPDATE_CHECK_URL.replace("PLATFORM", "windows");
             return callback && callback(); // ignore for now until this works
         }
 
         if (force) { log('Checking for updates...'); }
         var force_timeout_ms = 30000;
         var default_timeout_ms = 2500;
-        got(UPDATE_CHECK_URL, { timeout: (force ? force_timeout_ms : default_timeout_ms) })
+        got(config.VERSION_CHECK_URL, { timeout: (force ? force_timeout_ms : default_timeout_ms) })
             .then(res => {
                 if (res.body) { res.body = res.body.replace(/\r/g, '').replace(/\n/g, ''); }
                 if (!semver.valid(res.body)) {
                     // error during update check, set to check again in a day
-                    config.updatecheck = Date.now() - UPDATE_CHECK_INTERVAL + 86400000;
+                    config.updatecheck = Date.now() - config.UPDATE_CHECK_INTERVAL + 86400000;
                     saveConfig(config);
                     return callback && callback();
                 }
@@ -636,7 +621,7 @@ function performUpgrade(config, force, callback) {
                     // update needed
                     log('Performing upgrade from ' + pkg.version + ' to ' + res.body + '...');
                     var shell = spawn('/bin/bash', ['-c'
-                        , 'if [[ ! -z $(which curl) ]]; then curl -so /tmp/logdna.gz ' + UPDATE_UPDATE_URL + '; elif [[ ! -z $(which wget) ]]; then wget -qO /tmp/logdna.gz ' + UPDATE_UPDATE_URL + '; fi; gunzip -f /tmp/logdna.gz; cp -f /tmp/logdna /usr/local/logdna/bin/logdna; chmod 777 /usr/local/logdna/bin/logdna 2> /dev/null; echo -n "Successfully upgraded logdna-cli to "; /usr/local/bin/logdna -v'
+                        , 'if [[ ! -z $(which curl) ]]; then curl -so /tmp/logdna.gz ' + config.UPDATE_CHECK_URL + '; elif [[ ! -z $(which wget) ]]; then wget -qO /tmp/logdna.gz ' + config.UPDATE_CHECK_URL + '; fi; gunzip -f /tmp/logdna.gz; cp -f /tmp/logdna /usr/local/logdna/bin/logdna; chmod 777 /usr/local/logdna/bin/logdna 2> /dev/null; echo -n "Successfully upgraded logdna-cli to "; /usr/local/bin/logdna -v'
                     ], { stdio: 'inherit' });
                     shell.on('close', function() {
                         if (!force && process.argv[process.argv.length - 1].toLowerCase() !== 'update') {
@@ -662,10 +647,10 @@ function performUpgrade(config, force, callback) {
 
 function saveConfig(config, callback) {
     properties.stringify(config, {
-        path: DEFAULT_CONF_FILE
+        path: config.DEFAULT_CONF_FILE
     }, function(err) {
         if (err) {
-            console.error('Error while saving to: ' + (DEFAULT_CONF_FILE) + ': ' + err);
+            console.error('Error while saving to: ' + (config.DEFAULT_CONF_FILE) + ': ' + err);
         } else {
             return callback && callback();
         }
