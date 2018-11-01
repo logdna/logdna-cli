@@ -316,14 +316,14 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
                 if (options.from) {
                     try {
-                        params.from = new Date(options.from).getTime();
+                        params.from = new Date(parseInt(options.from)).getTime();
                     } catch (err) {
                     }
                 }
 
                 if (options.to) {
                     try {
-                        params.to = new Date(options.to).getTime();
+                        params.to = new Date(parseInt(options.to)).getTime();
                     } catch (err) {
                     }
                 }
