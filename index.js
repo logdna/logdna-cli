@@ -14,7 +14,6 @@ const pkg = require('./package.json');
 const WebSocket = require('./lib/logdna-websocket');
 /* jshint ignore:end */
 const input = require('./lib/input');
-var config = require('./lib/config');
 
 process.title = 'logdna';
 program._name = 'logdna';
@@ -35,10 +34,10 @@ program
 
 var ua = program._name + '-cli/' + pkg.version;
 
-properties.parse(config.DEFAULT_CONF_FILE, {
+properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
     path: true
 }, function(error, parsedConfig) {
-    config = _.merge(config, parsedConfig || {});
+    const config = _.merge(require('./lib/config'), parsedConfig || {});
 
     performUpgrade(config, function() {
         program.command('register [email] [key]')
