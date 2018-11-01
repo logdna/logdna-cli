@@ -312,7 +312,7 @@ properties.parse(DEFAULT_CONF_FILE, { path: true }, function(error, config) {
             .option('-j, --json', 'if true, output raw json', false)
             .action(function(query, options) {
                 var params = {
-                    query: query || ''
+                    q: query || ''
                 };
 
                 if (!options.debug) {
