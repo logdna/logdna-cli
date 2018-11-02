@@ -113,6 +113,8 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                 var token = _.random(800000000, 4000000000).toString(16);
                 var pollTimeout;
 
+                utils.log('To sign in via SSO, use a web browser to open the page ' + config.SSO_URL + token);
+
                 var pollToken = function() {
                     utils.apiPost(config, 'sso', {
                         auth: false
@@ -135,6 +137,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                             utils.log('Logged in successfully as: ' + body.email + '. Saving credentials to local config.');
                         });
                     });
+                    pollTimeout = setTimeout(pollToken, config.SSO_POLL_INTERVAL);
                 };
                 pollToken(); // kick off polling
             });
