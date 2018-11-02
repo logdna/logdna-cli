@@ -15,6 +15,7 @@ const WebSocket = require('./lib/logdna-websocket');
 /* jshint ignore:end */
 const input = require('./lib/input');
 const utils = require('./lib/utils');
+const EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/
 
 process.title = 'logdna';
 program._name = 'logdna';
@@ -52,7 +53,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                 var nextstep = function(email) {
                     email = email.toLowerCase();
 
-                    if (!(new RegExp(config.EMAIL_REGEX)).test(email)) return utils.log('Invalid email address');
+                    if (!EMAIL_REGEX.test(email)) return utils.log('Invalid email address');
 
                     input.required('First name: ', function(firstname) {
                         input.required('Last name: ', function(lastname) {
@@ -151,7 +152,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
                         email = email.toLowerCase();
 
-                        if (!(new RegExp(config.EMAIL_REGEX)).test(email)) return utils.log('Invalid email address');
+                        if (!EMAIL_REGEX.test(email)) return utils.log('Invalid email address');
 
                         utils.apiPost(config, 'login', {
                             auth: email + ':' + password
