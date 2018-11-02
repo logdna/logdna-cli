@@ -31,8 +31,8 @@ program
         utils.log('    $ logdna tail \'("timed out" OR "connection refused") -request\'');
         utils.log('    $ logdna tail -a access.log 500');
         utils.log('    $ logdna tail -l error,warn');
-        utils.log('    $ logdna search "logdna cli" -a logdna.log 300');
-        utils.log('    $ logdna search "logdna" -f 1541100040931 -t 1541102940000');
+        utils.log('    $ logdna search "logdna cli" -a logdna.log -t tag1,tag2 -n 300');
+        utils.log('    $ logdna search "logdna" --from 1541100040931 --to 1541102940000');
         utils.log('    $ logdna login user@example.com');
         utils.log('    $ logdna install syslog');
         utils.log('    $ logdna install k8s');
@@ -189,6 +189,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
             .option('-h, --hosts <hosts>', 'Filter on hosts (separate by comma)')
             .option('-a, --apps <apps>', 'Filter on apps (separate by comma)')
             .option('-l, --levels <levels>', 'Filter on levels (separate by comma)')
+            .option('-t, --tags <tags>', 'Filter on tags (separate by comma)')
             .option('-j, --json', 'if true, output raw json', false)
             .action(function(query, options) {
                 var params = utils.authParams(config);
@@ -198,6 +199,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                 if (options.hosts) params.hosts = options.hosts.replace(/, /g, ',');
                 if (options.apps) params.apps = options.apps.replace(/, /g, ',');
                 if (options.levels) params.levels = options.levels.replace(/, /g, ',');
+                if (options.tags) params.tags = options.tags.replace(/, /g, ',');
                 if (options.json) params.json = true;
 
                 params.q = params.q.trim();
@@ -207,6 +209,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                 ws.on('open', function open() {
                     utils.log('tail started. hosts: ' + (options.hosts || 'all') +
                         '. apps: ' + (options.apps || 'all') +
+                        '. tags: ' + (options.tags || 'all') +
                         '. levels: ' + (options.levels || (options.debug ? 'all' : '-debug')) +
                         '. query: ' + (query || 'none'));
                 });
@@ -277,10 +280,11 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
             .option('-a, --apps <apps>', 'Filter on apps (separate by comma)')
             .option('-l, --levels <levels>', 'Filter on levels (separate by comma)')
             .option('-n, --number <number>', 'Set how many lines to request')
+            .option('-t, --tags <tags>', 'Filter on tags (separate by comma)')
             .option('--prefer-head', 'Get lines from the beginning of the interval rather than the end')
             .option('--next', 'Get next chunk of lines (after last search). This is a convenience wrapper around the --from and --to parameters.')
-            .option('-f, --from <from>', 'Unix timestamp of beginning of search timeframe.')
-            .option('-t, --to <to>', 'Unix timestamp of end of search timeframe.')
+            .option('--from <from>', 'Unix timestamp of beginning of search timeframe.')
+            .option('--to <to>', 'Unix timestamp of end of search timeframe.')
             .option('-j, --json', 'if true, output raw json', false)
             .action(function(query, options) {
                 var params = {
@@ -320,14 +324,9 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                 if (options.json) params.json = true;
                 if (options.hosts) params.hosts = options.hosts.replace(/, /g, ',');
                 if (options.apps) params.apps = options.apps.replace(/, /g, ',');
-
-                if (options.levels) {
-                    params.levels = options.levels.replace(/, /g, ',');
-                }
-
-                if (config.servicekey) {
-                    params.servicekey = config.servicekey;
-                }
+                if (options.levels) params.levels = options.levels.replace(/, /g, ',');
+                if (options.tags) params.tags = options.tags.replace(/, /g, ',');
+                if (config.servicekey) params.servicekey = config.servicekey;
 
                 var modifiedconfig = JSON.parse(JSON.stringify(config));
 
@@ -335,6 +334,8 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                 delete modifiedconfig.email;
 
                 var t, t2, range;
+
+                console.log(params);
 
                 utils.apiGet(modifiedconfig, 'v1/export', params, function(body) {
                     if (body.range && body.range.from && body.range.to) {
@@ -360,6 +361,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                         '. hosts: ' + (options.hosts || 'all') +
                         '. apps: ' + (options.apps || 'all') +
                         '. levels: ' + (options.levels || (options.debug ? 'all' : '-debug')) +
+                        '. tags: ' + (options.tags || 'all') +
                         '. query: ' + (query || 'none'));
 
                     if (!(body && body.length)) return utils.log('Query returned no lines.');
