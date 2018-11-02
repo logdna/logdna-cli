@@ -4,6 +4,16 @@ The LogDNA CLI allows you to signup for a new account and tail your servers righ
 
 ## Installation
 
+### Source Code
+
+Follow these quick instructions in order to get LogDNA CLI from the source:
+
+```
+git clone https://github.com/logdna/logdna-cli.git
+cd logdna-cli
+npm install
+```
+
 ### macOS
 
 Download the [LogDNA CLI installer for Mac] (http://repo.logdna.com/mac/logdna-cli.pkg).  

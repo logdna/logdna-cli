@@ -21,7 +21,7 @@ process.title = 'logdna';
 program._name = 'logdna';
 program
     .version(pkg.version, '-v, --version')
-    .usage('[options] [commands]\n\n  This CLI duplicates useful functionality of the LogDNA web app.')
+    .usage('[commands] [options]\n\n  This CLI duplicates useful functionality of the LogDNA web app.')
     // .description('This CLI duplicates useful functionality of the LogDNA web app.')
     .on('--help', function() {
         utils.log('  Examples:');
@@ -31,7 +31,7 @@ program
         utils.log('    $ logdna tail \'("timed out" OR "connection refused") -request\'');
         utils.log('    $ logdna tail -a access.log 500');
         utils.log('    $ logdna tail -l error,warn');
-        utils.log('    $ logdna search "logdna" -a logdna.log 300');
+        utils.log('    $ logdna search "logdna cli" -a logdna.log 300');
         utils.log('    $ logdna search "logdna" -f 1541100040931 -t 1541102940000');
         utils.log('    $ logdna login user@example.com');
         utils.log('    $ logdna install syslog');
