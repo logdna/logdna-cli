@@ -335,8 +335,6 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
                 var t, t2, range;
 
-                console.log(params);
-
                 utils.apiGet(modifiedconfig, 'v1/export', params, function(body) {
                     if (body.range && body.range.from && body.range.to) {
                         t = new Date(body.range.from);
