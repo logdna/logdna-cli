@@ -12,7 +12,7 @@ jobs:
           name: Install Dependencies
           command: |
             apt-get update
-            apt-get install -y build-essential libssl-dev
+            apt-get install -y build-essential libssl-dev curl
             curl https://raw.githubusercontent.com/creationix/nvm/v0.25.0/install.sh | bash
       - run:
           name: Install NuGet
