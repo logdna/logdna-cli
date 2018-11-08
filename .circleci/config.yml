@@ -4,7 +4,7 @@ jobs:
     docker:
       - image: linuturk/mono-choco
       - image: circleci/node:8
-        command: [grunt]
+        command: [npm, install, --global, grunt, nexe]
     steps:
       - checkout
 #      - run:
