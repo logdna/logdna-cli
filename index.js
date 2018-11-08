@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 const _ = require('lodash');
 const program = require('commander');
 const properties = require('properties');
