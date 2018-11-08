@@ -13,19 +13,14 @@ jobs:
           command: |
             apt-get update
             apt-get install -y build-essential libssl-dev curl
-            curl https://raw.githubusercontent.com/creationix/nvm/v0.25.0/install.sh | bash
+            curl -sL https://deb.nodesource.com/setup_8.x | bash -
+            apt-get install nodejs
+            node --version
+            npm --version
       - run:
           name: Install NuGet
           command: |
-            chmod +x ~/.nvm/nvm.sh
-            ~/.nvm/nvm.sh install v8.11.3
-            ~/.nvm/nvm.sh use v8.11.3
-            ls ~/.nvm
-            ls ~/.nvm/versions
-            ls ~/.nvm/versions/node/
-            ls ~/.nvm/versions/node/v8.11.3/
-            chmod +x ~/.nvm/versions/node/v8.11.3/bin/npm
-            ~/.nvm/versions/node/v8.11.3/bin/npm install --global grunt nexe
+            npm install --global grunt nexe
             choco -?
 workflows:
   version: 2
