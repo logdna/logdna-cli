@@ -4,9 +4,7 @@ const properties = require('properties');
 const qs = require('querystring');
 
 const pkg = require('./package.json');
-/* jshint ignore:start */
 const WebSocket = require('./lib/logdna-websocket');
-/* jshint ignore:end */
 const input = require('./lib/input');
 const utils = require('./lib/utils');
 const EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
@@ -28,8 +26,6 @@ program
         utils.log('    $ logdna search "logdna cli" -a logdna.log -t tag1,tag2 -n 300');
         utils.log('    $ logdna search "logdna" --from 1541100040931 --to 1541102940000');
         utils.log('    $ logdna login user@example.com');
-        utils.log('    $ logdna install syslog');
-        utils.log('    $ logdna install k8s');
         utils.log('    $ logdna info');
         utils.log('    $ logdna update');
         utils.log();
@@ -179,7 +175,6 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
         program.command('tail [query]')
             .description('Live tail with optional filtering. See \'logdna tail --help\'')
-            .option('-d, --debug', 'Show debug level messages. Filtered by default')
             .option('-h, --hosts <hosts>', 'Filter on hosts (separate by comma)')
             .option('-a, --apps <apps>', 'Filter on apps (separate by comma)')
             .option('-l, --levels <levels>', 'Filter on levels (separate by comma)')
@@ -189,7 +184,6 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                 var params = utils.authParams(config);
                 params.q = query || '';
 
-                if (!options.debug) params.q += ' level:-debug';
                 if (options.hosts) params.hosts = options.hosts.replace(/, /g, ',');
                 if (options.apps) params.apps = options.apps.replace(/, /g, ',');
                 if (options.levels) params.levels = options.levels.replace(/, /g, ',');
@@ -215,15 +209,17 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                 ws.on('message', function(data) {
                     if (data.substring(0, 1) === '{') {
                         data = JSON.parse(data);
-                    } else return utils.log('Malformed line: ' + data);
-
+                    } else {
+                        return utils.log('Malformed line: ' + data);
+                    }
 
                     if (Array.isArray(data.p)) {
                         _.each(data.p, function(line) {
                             utils.renderLine(config, line, params);
                         });
-
-                    } else utils.renderLine(config, data.p, params);
+                    } else {
+                        utils.renderLine(config, data.p, params);
+                    }
                 });
 
                 ws.on('error', function(err) {
@@ -249,7 +245,9 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                     body = JSON.parse(body);
                     if (!body || (body.length && body.length < 2)) return utils.log('Your login ' + config.email + ' doesn\'t belong to other accounts. Ensure the other owner has added your email.');
 
-                    for (var i = 0; i < body.length; i++) utils.log((i + 1) + ': ' + body[i].name + (body[i].id === config.account ? ' (active)' : ''));
+                    for (var i = 0; i < body.length; i++) {
+                        utils.log((i + 1) + ': ' + body[i].name + (body[i].id === config.account ? ' (active)' : ''));
+                    }
 
                     input.required('Choose account [1-' + body.length + ']: ', function(selection) {
                         input.done();
@@ -269,7 +267,6 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
         program.command('search [query]')
             .description('Limited search functionality with optional filtering (beta). See \'logdna search --help\'')
-            .option('-d, --debug', 'Show debug level messages. Filtered by default')
             .option('-h, --hosts <hosts>', 'Filter on hosts (separate by comma)')
             .option('-a, --apps <apps>', 'Filter on apps (separate by comma)')
             .option('-l, --levels <levels>', 'Filter on levels (separate by comma)')
@@ -285,7 +282,6 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                     q: query || ''
                 };
 
-                if (!options.debug) params.query += ' level:-debug';
                 if (options.preferHead) params.prefer = 'head';
                 if (options.from) {
                     try {
@@ -364,7 +360,9 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                         t = new Date(line._ts);
                         if (options.preferHead && last_timestamp < t) {
                             last_timestamp = t;
-                        } else if (last_timestamp > t) last_timestamp = t;
+                        } else if (last_timestamp > t) {
+                            last_timestamp = t;
+                        }
 
                         utils.renderLine(config, line, params);
                     });
@@ -372,40 +370,6 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                     config.last_timestamp = last_timestamp.toJSON();
                     utils.saveConfig(config);
                 });
-            });
-
-        program.command('heroku <heroku-app-name>')
-            .description('Generates a Heroku Drain URL for log shipping to LogDNA')
-            .action(function(app) {
-                if (!config.token) return utils.log('Please login first. Type \'logdna login\' or \'logdna --help\' for more info.');
-
-                utils.log('Use the following Heroku CLI command to start log shipping:');
-                utils.log('heroku drains:add https://' + config.account + ':' + (config.key || 'YOUR_INGESTION_KEY_HERE') + '@heroku.logdna.com/heroku/logplex?app=' + app + ' --app ' + app);
-                utils.log();
-                utils.log('Once shipping begins, you can tail using \'logdna tail -h ' + app + '\'');
-
-            });
-
-        program.command('install [os]')
-            .description('Instructions for collecting logs from staging/production hosts and systems')
-            .action(function(os) {
-                try {
-                    utils.log(require('./lib/install')[os].replace(/ZZZZZZZZ/g, (config.key || 'YOUR_INGESTION_KEY_HERE')));
-                } catch (e) {
-                    utils.log('Try one of the following:');
-                    utils.log('logdna install deb            # Debian/Ubuntu/Linux Mint');
-                    utils.log('logdna install rpm            # CentOS/Amazon Linux/Red Hat/Enterprise Linux');
-                    utils.log('logdna install windows        # Windows Server');
-                    utils.log('logdna install mac            # macOS Server');
-                    utils.log('logdna install heroku         # Heroku Elements marketplace add-on');
-                    utils.log('logdna install heroku-drains  # Heroku drains');
-                    utils.log('logdna install syslog         # rsyslog/syslog-ng/syslog');
-                    utils.log('logdna install k8s            # Kubernetes Cluster');
-                    utils.log('logdna install docker         # Docker');
-                    utils.log('logdna install api            # REST-based ingestion API');
-                    utils.log('logdna install nodejs         # Node.js library');
-                    utils.log();
-                }
             });
 
         program.command('info')
