@@ -41,6 +41,7 @@ module.exports = function(grunt) {
             , upload_rpm: 'aws s3 cp ./logdna-cli.rpm s3://repo.logdna.com/linux/logdna-cli.rpm'
             , upload_deb: 'aws s3 cp ./logdna-cli.deb s3://repo.logdna.com/linux/logdna-cli.deb'
             , choco: 'pushd .\\.builds\\windows & cpack'
+            , choco_deb: 'cd ./.builds/windows & cpack'
         }, copy: {
             nuspec: {
                 files: [{
@@ -65,5 +66,5 @@ module.exports = function(grunt) {
     grunt.registerTask('build', ['lineremover', 'exec:nexe', 'exec:save_version']);
     grunt.registerTask('linux', ['build', 'exec:fpm_rpm', 'exec:fpm_deb', 'exec:cp_rpm', 'exec:cp_deb', 'exec:gzip_linuxbin', 'exec:upload_linuxbin', 'exec:upload_linuxver', 'exec:upload_rpm', 'exec:upload_deb']);
     grunt.registerTask('mac', ['build', 'exec:fpm_osxpkg', 'exec:sign_pkg', 'exec:rm_unsignedpkg', 'exec:gzip_macbin', 'exec:upload_macbin', 'exec:upload_macver', 'exec:upload_pkg']); // 'exec:verify_pkg', 'exec:install_pkg'
-    grunt.registerTask('windows', ['build', 'copy:nuspec', 'copy:winexe', 'exec:choco']);
+    grunt.registerTask('windows', ['build', 'copy:nuspec', 'copy:winexe', 'exec:choco_deb']);
 };
