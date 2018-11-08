@@ -16,10 +16,9 @@ jobs:
             curl -sL https://deb.nodesource.com/setup_8.x | bash -
             apt-get install -y nodejs
             npm install -g nexe
-            npm install
       - run:
           name: Do Grunt
-          command: grunt windows
+          command: npm install && grunt windows
 workflows:
   version: 2
   build_and_deploy:
