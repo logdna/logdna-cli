@@ -1,12 +1,7 @@
 const _ = require('lodash');
 const program = require('commander');
 const properties = require('properties');
-const got = require('got');
-const semver = require('semver');
-const os = require('os');
 const qs = require('querystring');
-const crypto = require('crypto');
-const spawn = require('child_process').spawn;
 
 const pkg = require('./package.json');
 /* jshint ignore:start */
@@ -14,7 +9,7 @@ const WebSocket = require('./lib/logdna-websocket');
 /* jshint ignore:end */
 const input = require('./lib/input');
 const utils = require('./lib/utils');
-const EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/
+const EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
 
 process.title = 'logdna';
 program._name = 'logdna';
