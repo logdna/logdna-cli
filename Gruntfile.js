@@ -41,7 +41,7 @@ module.exports = function(grunt) {
             , upload_rpm: 'aws s3 cp ./logdna-cli.rpm s3://repo.logdna.com/linux/logdna-cli.rpm'
             , upload_deb: 'aws s3 cp ./logdna-cli.deb s3://repo.logdna.com/linux/logdna-cli.deb'
             , choco: 'pushd .\\.builds\\windows & cpack'
-            , choco_deb: 'cd ./.builds/windows & ls -al & choco pack'
+            , choco_deb: 'cd .builds/windows & ls -al & choco pack'
         }, copy: {
             nuspec: {
                 files: [{
