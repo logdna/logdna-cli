@@ -1,0 +1,14 @@
+version: 2
+jobs:
+  build_windows:
+    docker:
+      - image: linuturk/mono-choco
+      - image: circleci/node:8
+    steps:
+      - checkout
+#      - run:
+#          name: Create NuGet
+#          command: npm install && grunt windows
+      - run:
+          name: Install NuGet
+          command: choco install logdna-cli
