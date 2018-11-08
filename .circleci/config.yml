@@ -15,7 +15,8 @@ jobs:
             apt-get install -y build-essential libssl-dev curl
             curl -sL https://deb.nodesource.com/setup_8.x | bash -
             apt-get install -y nodejs
-            npm install -g grunt nexe
+            npm install -g nexe
+            npm install
       - run:
           name: Do Grunt
           command: grunt windows
