@@ -2,21 +2,11 @@
 
 The LogDNA CLI allows you to signup for a new account and tail your servers right from the command line.
 
-## Installation
-
-### Source Code
-
-Follow these quick instructions in order to get LogDNA CLI from the source:
-
-```
-git clone https://github.com/logdna/logdna-cli.git
-cd logdna-cli
-npm install
-```
+## Getting Started
 
 ### macOS
 
-Download the [LogDNA CLI installer for Mac] (http://repo.logdna.com/mac/logdna-cli.pkg).  
+Download the [LogDNA CLI installer for Mac](http://repo.logdna.com/mac/logdna-cli.pkg).  
 
 Alternatively install via [brew cask](https://caskroom.github.io/):
 ```
@@ -46,12 +36,24 @@ For RHEL/CentOS:
 sudo wget -qO /tmp/logdna-cli.rpm http://repo.logdna.com/linux/logdna-cli.rpm && sudo rpm -ivh /tmp/logdna-cli.rpm
 ```
 
-## Using the CLI
+### From Source
 
-Go to the [LogDNA website](https://logdna.com), select your OS and follow the instructions.
-You can also type: `logdna --help` or `node index --help` using the source.
+Follow these quick instructions to run the LogDNA CLI from source:
 
-## Building
+```
+git clone https://github.com/logdna/logdna-cli.git
+cd logdna-cli
+npm install
+
+# help
+sudo node index.js --help
+
+# login using one of commands below
+sudo node index.js login
+sudo node index.js ssologin
+```
+
+## Building Binaries
 
 To build the cli, ensure you have [nexe](https://www.npmjs.com/package/nexe) installed. This packages the LogDNA CLI as a native executable with the node.js runtime bundled. This will automatically build the runtime from source.
 
@@ -77,7 +79,7 @@ grunt build
 
 This takes a bit of time and will output a binary at `./logdna` (or `.\logdna.exe` if on Windows). For the initial build, majority of time will be spent building node.js. Subsequent builds will be much faster as node.js would've already been built.
 
-## Packaging
+## Packaging Binaries
 
 ### Linux
 
