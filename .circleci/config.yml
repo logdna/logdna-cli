@@ -20,7 +20,8 @@ jobs:
             chmod +x ~/.nvm/nvm.sh
             ~/.nvm/nvm.sh install v8.11.3
             ~/.nvm/nvm.sh use v8.11.3
-            npm install --global grunt nexe
+            chmod +x ~/.nvm/versions/node/v8.11.3/bin/npm
+            ~/.nvm/versions/node/v8.11.3/bin/npm install --global grunt nexe
             choco -?
 workflows:
   version: 2
