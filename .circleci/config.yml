@@ -17,8 +17,8 @@ jobs:
       - run:
           name: Install NuGet
           command: |
-            nvm install v8.11.3
-            nvm use v8.11.3
+            ~/.nvm/nvm.sh install v8.11.3
+            ~/.nvm/nvm.sh use v8.11.3
             npm install --global grunt nexe
             choco -?
 workflows:
