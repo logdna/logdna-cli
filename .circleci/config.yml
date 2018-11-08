@@ -4,6 +4,7 @@ jobs:
     docker:
       - image: linuturk/mono-choco
       - image: circleci/node:8
+        command: [grunt]
     steps:
       - checkout
 #      - run:
