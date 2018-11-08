@@ -14,7 +14,7 @@ jobs:
             apt-get update
             apt-get install -y build-essential libssl-dev curl
             curl -sL https://deb.nodesource.com/setup_8.x | bash -
-            apt-get install nodejs
+            apt-get install -y nodejs
             node --version
             npm --version
       - run:
