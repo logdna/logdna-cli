@@ -11,7 +11,7 @@ jobs:
 #          command: npm install && grunt windows
       - run:
           name: Install NuGet
-          command: choco install logdna-cli
+          command: choco -?
 workflows:
   version: 2
   build_and_deploy:
