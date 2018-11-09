@@ -18,7 +18,7 @@ jobs:
             npm install -g nexe grunt-cli
       - run:
           name: Do Grunt
-          command: npm install && grunt windows
+          command: npm install && nuget -v && grunt windows
 workflows:
   version: 2
   build_and_deploy:
