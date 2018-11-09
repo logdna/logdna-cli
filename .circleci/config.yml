@@ -15,10 +15,16 @@ jobs:
             sudo apt install -y apt-transport-https
             echo "deb https://download.mono-project.com/repo/debian stable-jessie main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
             sudo apt update
-            sudo apt install -y mono-devel
-      - run:
-          name: Do Grunt
-          command: npm install && grunt windows
+            sudo apt install -y binutils curl mono-devel ca-certificates-mono fsharp mono-vbnc nuget referenceassemblies-pcl
+            cd /usr/local/src
+            wget "https://github.com/chocolatey/choco/archive/stable.tar.gz"
+            tar -xzf "stable.tar.gz" && mv "choco-stable" choco
+            cd /usr/local/src/choco
+            chmod +x build.sh zip.sh
+            ./build.sh -v
+#      - run:
+#          name: Do Grunt
+#          command: npm install && grunt windows
 workflows:
   version: 2
   build_and_deploy:
