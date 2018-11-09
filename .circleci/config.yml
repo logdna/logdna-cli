@@ -20,7 +20,7 @@ jobs:
       - run:
           name: Welcome .NET
           command: |
-            dotnet --help
+            dotnet help
 workflows:
   version: 2
   build_and_deploy:
