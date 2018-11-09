@@ -17,6 +17,10 @@ jobs:
             sudo chown root:root /etc/apt/sources.list.d/microsoft-prod.list
             sudo apt-get update
             sudo apt-get install -y dotnet-sdk-2.1
+      - run:
+          name: Welcome .NET
+          command: |
+            dotnet --help
 workflows:
   version: 2
   build_and_deploy:
