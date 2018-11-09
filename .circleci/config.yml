@@ -18,9 +18,10 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y dotnet-sdk-2.1
       - run:
-          name: Welcome .NET
+          name: Install Grunt CLI and NEXE
           command: |
-            dotnet help
+            npm install -g nexe grunt-cli
+            npm install && grunt windows
 workflows:
   version: 2
   build_and_deploy:
