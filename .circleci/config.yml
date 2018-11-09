@@ -12,10 +12,10 @@ jobs:
           name: Install Mono
           command: |
             sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-            sudo apt install apt-transport-https
+            sudo apt install -y apt-transport-https
             echo "deb https://download.mono-project.com/repo/ubuntu stable-trusty main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
             sudo apt update
-            sudo apt install mono-devel
+            sudo apt install -y binutils curl mono-devel ca-certificates-mono fsharp mono-vbnc nuget referenceassemblies-pcl
       - run:
           name: Do Grunt
           command: npm install && grunt windows
