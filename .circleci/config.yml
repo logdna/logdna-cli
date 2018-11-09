@@ -17,9 +17,6 @@ jobs:
             sudo chown root:root /etc/apt/sources.list.d/microsoft-prod.list
             sudo apt-get update
             sudo apt-get install -y dotnet-sdk-2.1
-            dotnet pack --help
-            dotnet nuget --help
-            dotnet pack-nuspec --help
       - run:
           name: Install Grunt CLI and NEXE
           command: |

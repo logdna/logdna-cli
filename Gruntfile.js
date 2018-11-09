@@ -46,11 +46,14 @@ module.exports = function(grunt) {
             , upload_rpm: 'aws s3 cp ./logdna-cli.rpm s3://repo.logdna.com/linux/logdna-cli.rpm'
             , upload_deb: 'aws s3 cp ./logdna-cli.deb s3://repo.logdna.com/linux/logdna-cli.deb'
             , choco: 'pushd .\\.builds\\windows & cpack'
-            , choco_deb: 'cp logdna.nuspec .builds/windows && cp logdna.exe .builds/windows/tools && cd .builds/windows && dotnet pack /p:NuspecFile=logdna.nuspec --no-build'
+            , choco_deb: 'cp logdna.nuspec .builds/windows && cp logdna.exe .builds/windows/tools && cd .builds/windows && dotnet pack'
         }, copy: {
             nuspec: {
                 files: [{
                     src: './logdna.nuspec'
+                    , dest: './.builds/windows/'
+                }, {
+                    src: './logdna.csproj'
                     , dest: './.builds/windows/'
                 }]
             }, winexe: {
