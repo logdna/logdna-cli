@@ -2,23 +2,20 @@ version: 2
 jobs:
   build_windows:
     docker:
-      - image: linuturk/mono-choco
+      - image: circleci/node:8
     steps:
       - checkout
-#      - run:
-#          name: Create NuGet
-#          command: npm install && grunt windows
       - run:
-          name: Install Dependencies
+          name: Install .NET
           command: |
-            apt-get update
-            apt-get install -y build-essential libssl-dev curl
-            curl -sL https://deb.nodesource.com/setup_8.x | bash -
-            apt-get install -y nodejs nuget
-            npm install -g nexe grunt-cli
-      - run:
-          name: Do Grunt
-          command: npm install && grunt windows
+            wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.asc.gpg
+            sudo mv microsoft.asc.gpg /etc/apt/trusted.gpg.d/
+            wget -q https://packages.microsoft.com/config/debian/8/prod.list
+            sudo mv prod.list /etc/apt/sources.list.d/microsoft-prod.list
+            sudo chown root:root /etc/apt/trusted.gpg.d/microsoft.asc.gpg
+            sudo chown root:root /etc/apt/sources.list.d/microsoft-prod.list
+            sudo apt-get update
+            sudo apt-get install -y dotnet-sdk-2.1
 workflows:
   version: 2
   build_and_deploy:
