@@ -20,7 +20,7 @@ jobs:
       - run:
           name: Install Grunt CLI and NEXE
           command: |
-            npm install -g nexe grunt-cli
+            sudo npm install -g nexe grunt-cli
             npm install && grunt windows
 workflows:
   version: 2
