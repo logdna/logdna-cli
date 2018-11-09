@@ -2,27 +2,23 @@ version: 2
 jobs:
   build_windows:
     docker:
-      - image: circleci/node:8
+      - image: linuturk/mono-choco
     steps:
       - checkout
 #      - run:
 #          name: Create NuGet
 #          command: npm install && grunt windows
       - run:
-          name: Install Mono
+          name: Install Dependencies
           command: |
-            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-            sudo apt install -y apt-transport-https
-            echo "deb https://download.mono-project.com/repo/debian stable-jessie main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-            sudo apt update
-            sudo apt install -y binutils curl mono-complete ca-certificates-mono fsharp mono-vbnc nuget referenceassemblies-pcl
-            wget "https://github.com/chocolatey/choco/archive/stable.tar.gz"
-            tar -xzf "stable.tar.gz" && sudo mv "choco-stable" /usr/local/src/choco
-            cd /usr/local/src/choco && sudo chmod +x build.sh zip.sh
-            ./build.sh -v
-#      - run:
-#          name: Do Grunt
-#          command: npm install && grunt windows
+            apt-get update
+            apt-get install -y build-essential libssl-dev curl
+            curl -sL https://deb.nodesource.com/setup_8.x | bash -
+            apt-get install -y nodejs
+            npm install -g nexe grunt-cli
+      - run:
+          name: Do Grunt
+          command: npm install && grunt windows
 workflows:
   version: 2
   build_and_deploy:
