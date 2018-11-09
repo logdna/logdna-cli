@@ -20,9 +20,14 @@ module.exports = function(grunt) {
                 }
             }
         }, exec: {
-            nexe: { cmd: 'nexe -i index.js -o ' + buildOutputFile + ' -f -t ~/tmp -r 5.9.0', maxBuffer: 20000 * 1024 }
-            , save_version: 'echo ' + pkg.version + ' > version'
-            , fpm_osxpkg: 'fpm -s dir -t osxpkg --osxpkg-identifier-prefix com.logdna -n logdna-cli -v ' + pkg.version + ' --post-install ./scripts/post-install -f ./logdna=/usr/local/logdna/bin/logdna'
+            nexe: {
+                cmd: 'nexe -i index.js -o ' + buildOutputFile + ' -f -t ~/tmp -r 8.11.3'
+                , maxBuffer: 20000 * 1024
+            }, save_version: 'echo ' + pkg.version + ' > version'
+            , nexe_win: {
+                cmd: 'nexe -i index.js -o logdna.exe -f -t ~/tmp -r 8.11.3'
+                , maxBuffer: 20000 * 1024
+            }, fpm_osxpkg: 'fpm -s dir -t osxpkg --osxpkg-identifier-prefix com.logdna -n logdna-cli -v ' + pkg.version + ' --post-install ./scripts/post-install -f ./logdna=/usr/local/logdna/bin/logdna'
             , sign_pkg: 'productsign --sign "Developer ID Installer: Answerbook, Inc. (TT7664HMU3)" logdna-cli-' + pkg.version + '.pkg logdna-cli.pkg'
             , verify_pkg: 'spctl -a -t install -vv logdna-cli.pkg'
             , rm_unsignedpkg: 'rm logdna-cli-' + pkg.version + '.pkg'
@@ -63,7 +68,7 @@ module.exports = function(grunt) {
         }
     });
     grunt.registerTask('test', ['eslint']);
-    grunt.registerTask('build', ['lineremover', 'exec:nexe', 'exec:save_version']);
+    grunt.registerTask('build', ['lineremover', 'exec:nexe_win', 'exec:save_version']);
     grunt.registerTask('linux', ['build', 'exec:fpm_rpm', 'exec:fpm_deb', 'exec:cp_rpm', 'exec:cp_deb', 'exec:gzip_linuxbin', 'exec:upload_linuxbin', 'exec:upload_linuxver', 'exec:upload_rpm', 'exec:upload_deb']);
     grunt.registerTask('mac', ['build', 'exec:fpm_osxpkg', 'exec:sign_pkg', 'exec:rm_unsignedpkg', 'exec:gzip_macbin', 'exec:upload_macbin', 'exec:upload_macver', 'exec:upload_pkg']); // 'exec:verify_pkg', 'exec:install_pkg'
     grunt.registerTask('windows', ['build', 'copy:nuspec', 'copy:winexe', 'exec:choco_deb']);
