@@ -6,6 +6,11 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install AWS CLI
+          command: |
+            sudo apt-get install -y python python-pip
+            sudo pip install -y awscli
+      - run:
           name: Install .NET
           command: |
             sudo apt-get install -y apt-transport-https
