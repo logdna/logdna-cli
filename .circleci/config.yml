@@ -32,6 +32,10 @@ jobs:
           command: |
             sudo npm install -g nexe grunt-cli
             npm install && grunt circle_windows
+      - run:
+          name: Upload NuPKG into Choco
+          command: |
+            curl -X PUT -H "X-NuGet-ApiKey: ${CHOCO_API_KEY}" -T "./.builds/windows/bin/Debug/logdna.1.3.0.nupkg" "https://push.chocolatey.org/api/v2/package"
 workflows:
   version: 2
   build_and_deploy:
