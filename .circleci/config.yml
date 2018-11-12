@@ -9,7 +9,7 @@ jobs:
           name: Install AWS CLI
           command: |
             sudo apt-get install -y python python-pip
-            sudo pip install -y awscli
+            sudo pip install awscli
       - run:
           name: Install .NET
           command: |
