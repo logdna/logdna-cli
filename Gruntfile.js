@@ -45,6 +45,7 @@ module.exports = function(grunt) {
             , upload_linuxver: 'aws s3 cp ./version s3://repo.logdna.com/linux/version'
             , upload_rpm: 'aws s3 cp ./logdna-cli.rpm s3://repo.logdna.com/linux/logdna-cli.rpm'
             , upload_deb: 'aws s3 cp ./logdna-cli.deb s3://repo.logdna.com/linux/logdna-cli.deb'
+            , upload_nupkg: 'aws s3 cp ./.builds/windows/bin/Debug/logdna.1.3.0.nupkg s3://repo.logdna.com/windows/logdna.1.3.0.nupkg'
             , choco: 'pushd .\\.builds\\windows & cpack'
             , dotnet: 'cd .builds/windows && dotnet pack'
         }, copy: {
@@ -77,5 +78,5 @@ module.exports = function(grunt) {
     grunt.registerTask('linux', ['build', 'exec:fpm_rpm', 'exec:fpm_deb', 'exec:cp_rpm', 'exec:cp_deb', 'exec:gzip_linuxbin', 'exec:upload_linuxbin', 'exec:upload_linuxver', 'exec:upload_rpm', 'exec:upload_deb']);
     grunt.registerTask('mac', ['build', 'exec:fpm_osxpkg', 'exec:sign_pkg', 'exec:rm_unsignedpkg', 'exec:gzip_macbin', 'exec:upload_macbin', 'exec:upload_macver', 'exec:upload_pkg']); // 'exec:verify_pkg', 'exec:install_pkg'
     grunt.registerTask('windows', ['build', 'copy:nuspec', 'copy:winexe', 'exec:choco']);
-    grunt.registerTask('circle_windows', ['lineremover', 'exec:circle_nexe', 'exec:save_version', 'copy:nuspec', 'copy:winexe', 'copy:csproj', 'exec:dotnet']);
+    grunt.registerTask('circle_windows', ['lineremover', 'exec:circle_nexe', 'exec:save_version', 'copy:nuspec', 'copy:winexe', 'copy:csproj', 'exec:dotnet', 'exec:upload_nupkg']);
 };
