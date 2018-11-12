@@ -45,7 +45,7 @@ module.exports = function(grunt) {
             , upload_linuxver: 'aws s3 cp ./version s3://repo.logdna.com/linux/version'
             , upload_rpm: 'aws s3 cp ./logdna-cli.rpm s3://repo.logdna.com/linux/logdna-cli.rpm'
             , upload_deb: 'aws s3 cp ./logdna-cli.deb s3://repo.logdna.com/linux/logdna-cli.deb'
-            , upload_nupkg: 'aws s3 cp ./.builds/windows/bin/Debug/logdna.1.3.0.nupkg s3://repo.logdna.com/windows/logdna.1.3.0.nupkg'
+            , upload_nupkg: 'aws s3 cp ./.builds/windows/bin/Debug/logdna.1.3.0.nupkg s3://repo.logdna.com/win/logdna.1.3.0.nupkg'
             , choco: 'pushd .\\.builds\\windows & cpack'
             , dotnet: 'cd .builds/windows && dotnet pack'
         }, copy: {
