@@ -1,4 +1,5 @@
 const os = require('os');
+const fs = require('fs');
 const grunt = require('grunt');
 const path = require('path');
 const pkg = require('./package.json');
@@ -8,7 +9,6 @@ require('load-grunt-tasks')(grunt);
 module.exports = function(grunt) {
     const files = ['./index.js', './Gruntfile.js', 'lib/**/*.js', 'test/**/*.js'];
     const buildOutputFile = os.platform() !== 'win32' ? 'logdna' : 'logdna.exe';
-
     grunt.initConfig({
         lineremover: {
             nukebrowser: {
