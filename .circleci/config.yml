@@ -37,7 +37,7 @@ jobs:
             apt-get update && apt-get install -y wget unzip
             wget https://s3.amazonaws.com/repo.logdna.com/win/logdna.1.3.0.zip
             unzip logdna.1.3.0.zip
-            cd .builds/windows && cpack
+            cd .builds/windows && ls . && choco pack
 workflows:
   version: 2
   build_and_deploy:
