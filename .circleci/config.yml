@@ -32,8 +32,9 @@ jobs:
     steps:
       - checkout
       - run:
-          run: Push to Chocolatey
+          run: Versions
           command: |
+            cat /etc/os-release
             choco -v
 workflows:
   version: 2
