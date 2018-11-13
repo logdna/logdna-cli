@@ -32,6 +32,12 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Version
+          command: |
+            mono --version
+            choco --version
+            cat /etc/release
+      - run:
           name: Push to Choco
           command: |
             apt-get update && apt-get install -y wget unzip
