@@ -17,7 +17,15 @@ jobs:
             sudo apt-get update
             sudo apt-get install mono-devel -y
             mono --version
-            exit 1
+      - run:
+          name: Install Chocolatey
+          command: |
+            git clone https://github.com/chocolatey/choco.git
+            cd choco && git checkout stable
+            export PKG_CONFIG_PATH=/opt/local/lib/pkgconfig:/Library/Frameworks/Mono.framework/Versions/Current/lib/pkgconfig:$PKG_CONFIG_PATH
+            chmod +x build.sh
+            chmod +x zip.sh
+            ./build.sh
       - run:
           name: Install AWS CLI
           command: |
