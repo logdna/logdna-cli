@@ -6,6 +6,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Debian Version
+          command: cat /etc/os-release
+      - run:
           name: Install AWS CLI
           command: |
             sudo apt-get update
