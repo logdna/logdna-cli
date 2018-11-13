@@ -13,7 +13,7 @@ jobs:
           command: |
             sudo apt-get install apt-transport-https -y
             sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-            echo "deb https://download.mono-project.com/repo/debian stable-jessie/snapshots/4.0.1 main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
+            echo "deb https://download.mono-project.com/repo/debian stable-jessie/snapshots/4.8.1 main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
             sudo apt-get update
             sudo apt-get install mono-devel -y
             mono --version
