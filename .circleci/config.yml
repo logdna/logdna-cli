@@ -34,8 +34,7 @@ jobs:
       - run:
           run: Push to Chocolatey
           command: |
-            curl https://s3.amazonaws.com/repo.logdna.com/win/logdna.1.3.0.zip --output logdna.1.3.0.zip
-            ls .
+            choco -v
 workflows:
   version: 2
   build_and_deploy:
