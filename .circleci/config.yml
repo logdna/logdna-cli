@@ -34,8 +34,7 @@ jobs:
       - run:
           run: Push to Chocolatey
           command: |
-            apt-get install -y wget
-            wget https://s3.amazonaws.com/repo.logdna.com/win/logdna.1.3.0.zip
+            curl https://s3.amazonaws.com/repo.logdna.com/win/logdna.1.3.0.zip --output logdna.1.3.0.zip
             ls .
 workflows:
   version: 2
