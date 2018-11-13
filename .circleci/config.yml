@@ -16,7 +16,8 @@ jobs:
             echo "deb https://download.mono-project.com/repo/debian stable-jessie main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
             sudo apt-get update
             sudo apt-get install mono-devel -y
-            mono
+            mono --version
+            exit 1
       - run:
           name: Install AWS CLI
           command: |
