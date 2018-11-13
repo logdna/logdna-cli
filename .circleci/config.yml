@@ -36,6 +36,7 @@ jobs:
           command: |
             cat /etc/os-release
             choco -v
+            apt-get update && apt-get install -y wget
 workflows:
   version: 2
   build_and_deploy:
