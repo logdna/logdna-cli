@@ -37,21 +37,21 @@ jobs:
             mono --version
             choco --version
             which choco
-            ls -a /usr/local/bin/
+            find / -type f -name choco.exe
 workflows:
   version: 2
   build_and_deploy:
     jobs:
-      - build_windows:
-          filters:
-            branches:
-              only: Configs
-              ignore:
-                - master
-                - Updates
+#      - build_windows:
+#          filters:
+#            branches:
+#              only: Configs
+#              ignore:
+#                - master
+#                - Updates
       - push_to_choco:
-          requires:
-            - build_windows
+#          requires:
+#            - build_windows
           filters:
             branches:
               only: Configs
