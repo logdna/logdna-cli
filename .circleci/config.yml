@@ -43,7 +43,7 @@ jobs:
           name: Version
           command: |
             cd .builds/windows
-            choco pack logdna.nuspec 2>/dev/null
+            choco pack . 2>/dev/null
 workflows:
   version: 2
   build_and_deploy:
