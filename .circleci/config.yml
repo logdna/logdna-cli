@@ -5,27 +5,27 @@ jobs:
       - image: circleci/node:8
     steps:
       - checkout
-      - run:
-          name: Install AWS CLI, Grunt CLI, and NEXE
-          command: |
-            sudo apt-get update
-            sudo apt-get install python3 python-dev python3-dev \
-              build-essential libssl-dev libffi-dev \
-              libxml2-dev libxslt1-dev zlib1g-dev python-pip
-            sudo pip install --upgrade pip
-            sudo pip install awscli
-            sudo npm install -g nexe grunt-cli
-      - run:
-          name: Do Gruntfile Steps
-          command: |
-            nexe -i index.js -o logdna.exe -f -t ~/tmp -r 8.11.3
-            cat package.json | grep "version" | cut -d':' -f2 | cut -d'"' -f2 >> VERSION.txt
-            cp LICENSE.md LICENSE.txt
-            mkdir -p .builds/windows/tools/
-            cp VERSION.txt LICENSE.txt logdna.exe .builds/windows/tools
-            cp logdna.nuspec .builds/windows
-            zip -r logdna.1.3.0.zip .builds/windows
-            aws s3 cp logdna.1.3.0.zip s3://repo.logdna.com/win/logdna.1.3.0.zip
+#      - run:
+#          name: Install AWS CLI, Grunt CLI, and NEXE
+#          command: |
+#            sudo apt-get update
+#            sudo apt-get install python3 python-dev python3-dev \
+#              build-essential libssl-dev libffi-dev \
+#              libxml2-dev libxslt1-dev zlib1g-dev python-pip
+#            sudo pip install --upgrade pip
+#            sudo pip install awscli
+#            sudo npm install -g nexe grunt-cli
+#     - run:
+#          name: Do Gruntfile Steps
+#          command: |
+#            nexe -i index.js -o logdna.exe -f -t ~/tmp -r 8.11.3
+#            cat package.json | grep "version" | cut -d':' -f2 | cut -d'"' -f2 >> VERSION.txt
+#            cp LICENSE.md LICENSE.txt
+#            mkdir -p .builds/windows/tools/
+#            cp VERSION.txt LICENSE.txt logdna.exe .builds/windows/tools
+#            cp logdna.nuspec .builds/windows
+#            zip -r logdna.1.3.0.zip .builds/windows
+#            aws s3 cp logdna.1.3.0.zip s3://repo.logdna.com/win/logdna.1.3.0.zip
   push_to_choco:
     docker:
       - image: linuturk/mono-choco
@@ -36,7 +36,7 @@ jobs:
           command: |
             mono --version
             choco --version
-            choco pack
+            ls -a /usr/local/bin/c*
 workflows:
   version: 2
   build_and_deploy:
