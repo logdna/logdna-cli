@@ -34,7 +34,7 @@ jobs:
       - run:
           name: Install WGet, UnZip
           command: |
-            lsb_release -a
+            cat /etc/os-release
             apt-get update
             apt-get install -y wget unzip
       - run:
