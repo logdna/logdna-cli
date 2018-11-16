@@ -39,12 +39,12 @@ jobs:
             wget https://s3.amazonaws.com/repo.logdna.com/win/logdna.1.3.0.zip
             ls -a .
             unzip logdna.1.3.0.zip
+            cp -r .builds/windows/tools .
+            ls -a
       - run:
           name: Version
           command: |
-            cd .builds/windows && ls -a
-            cat logdna.nuspec
-            choco pack logdna.nuspec tools/ 2>/dev/null
+            choco pack logdna.nuspec 2>/dev/null
 workflows:
   version: 2
   build_and_deploy:
