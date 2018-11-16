@@ -37,7 +37,10 @@ jobs:
             mono --version
             choco --version
             which choco
-            ls /opt/chocolatey/
+            cd /usr/local/src/choco/choco-stable/build_output/chocolatey
+            ls .
+            mono choco.exe -h
+            mono choco.exe pack
 workflows:
   version: 2
   build_and_deploy:
