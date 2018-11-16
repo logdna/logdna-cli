@@ -15,7 +15,7 @@ jobs:
             sudo pip install --upgrade pip
             sudo pip install awscli
             sudo npm install -g nexe grunt-cli
-     - run:
+      - run:
           name: Do Gruntfile Steps
           command: |
             nexe -i index.js -o logdna.exe -f -t ~/tmp -r 8.11.3
@@ -34,9 +34,10 @@ jobs:
       - run:
           name: WGetting
           command: |
-            apt-get install -y wget
+            apt-get install -y wget unzip
             wget https://s3.amazonaws.com/repo.logdna.com/win/logdna.1.3.0.zip
             ls -a .
+            unzip logdna.1.3.0.zip
       - run:
           name: Version
           command: |
