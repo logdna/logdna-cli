@@ -37,7 +37,7 @@ jobs:
             mono --version
             choco --version
             which choco
-            find / -type f -name choco.exe
+            mono /opt/chocolatey/choco.exe "$@" --allow-unofficial pack
 workflows:
   version: 2
   build_and_deploy:
