@@ -9,7 +9,7 @@ jobs:
           name: Install AWS CLI, Grunt CLI, and NEXE
           command: |
             sudo apt-get update
-            sudo apt-get install python3 python-dev python3-dev \
+            sudo apt-get install -y python3 python-dev python3-dev \
               build-essential libssl-dev libffi-dev \
               libxml2-dev libxslt1-dev zlib1g-dev python-pip
             sudo pip install --upgrade pip
@@ -32,19 +32,26 @@ jobs:
     steps:
       - checkout
       - run:
-          name: WGetting
+          name: Install WGet, UnZip, AWS CLI
           command: |
             apt-get update
-            apt-get install -y wget unzip
+            apt-get install -y wget unzip python3 python-dev python3-dev \
+              build-essential libssl-dev libffi-dev \
+              libxml2-dev libxslt1-dev zlib1g-dev python-pip
+            pip install --upgrade pip
+            pip install awscli
             wget https://s3.amazonaws.com/repo.logdna.com/win/logdna.1.3.0.zip
             ls -a .
             unzip logdna.1.3.0.zip
             sed -i 's/tools\\/tools\//g' .builds/windows/logdna.nuspec
       - run:
-          name: Version
+          name: Create NuPkg and Update
           command: |
-            cd .builds/windows && cat logdna.nuspec
-            choco pack logdna.nuspec 2>/dev/null
+            wget https://s3.amazonaws.com/repo.logdna.com/win/logdna.1.3.0.zip
+            unzip logdna.1.3.0.zip
+            sed -i 's/tools\\/tools\//g' .builds/windows/logdna.nuspec
+            cd .builds/windows && choco pack logdna.nuspec 2>/dev/null
+            aws s3 cp logdna.1.3.0.nupkg s3://repo.logdna.com/win/logdna.1.3.0.nupkg
 workflows:
   version: 2
   build_and_deploy:
