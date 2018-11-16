@@ -35,21 +35,17 @@ jobs:
           name: Install WGet, UnZip, AWS CLI
           command: |
             apt-get update
-            apt-get install -y wget unzip python-pip
-            pip install --upgrade pip 2>/dev/null
-            pip install awscli
+            apt-get install -y wget unzip
             wget https://s3.amazonaws.com/repo.logdna.com/win/logdna.1.3.0.zip
-            ls -a .
             unzip logdna.1.3.0.zip
             sed -i 's/tools\\/tools\//g' .builds/windows/logdna.nuspec
       - run:
           name: Create NuPkg and Update
           command: |
             wget https://s3.amazonaws.com/repo.logdna.com/win/logdna.1.3.0.zip
-            unzip logdna.1.3.0.zip
-            sed -i 's/tools\\/tools\//g' .builds/windows/logdna.nuspec
-            cd .builds/windows && choco pack logdna.nuspec 2>/dev/null
-            aws s3 cp logdna.1.3.0.nupkg s3://repo.logdna.com/win/logdna.1.3.0.nupkg
+            unzip logdna.1.3.0.zip && cd .builds/windows
+            choco pack logdna.nuspec 2>/dev/null
+            choco push *.nupkg -k=${CHOCO_API_KEY} 2>/dev/null
 workflows:
   version: 2
   build_and_deploy:
