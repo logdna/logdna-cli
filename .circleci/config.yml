@@ -42,6 +42,7 @@ jobs:
       - run:
           name: Version
           command: |
+            cd .builds/windows
             choco pack logdna.nuspec 2>/dev/null
 workflows:
   version: 2
