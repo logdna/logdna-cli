@@ -36,7 +36,8 @@ jobs:
           command: |
             mono --version
             choco --version
-            ls -a /usr/local/bin/c*
+            which choco
+            ls -a /usr/local/bin/
 workflows:
   version: 2
   build_and_deploy:
