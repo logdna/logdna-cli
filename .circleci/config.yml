@@ -18,7 +18,8 @@ jobs:
       - run:
           name: Do Gruntfile Steps
           command: |
-            nexe -i index.js -o logdna.exe -f -t win32
+
+            npm install && nexe -i index.js lib/ node_modules/ package.json -o logdna.exe -f -t win32
             cat package.json | grep "version" | cut -d':' -f2 | cut -d'"' -f2 >> VERSION.txt
             cp LICENSE.md LICENSE.txt
             mkdir -p .builds/windows/tools/
