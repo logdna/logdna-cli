@@ -19,7 +19,7 @@ jobs:
           name: Do Gruntfile Steps
           command: |
             npm install
-            grunt lineremover && nexe -i index.js -o logdna.exe -f -t win32
+            grunt lineremover && grunt exec:circle_nexe
             cat package.json | grep "version" | cut -d':' -f2 | cut -d'"' -f2 >> VERSION.txt
             cp LICENSE.md LICENSE.txt
             mkdir -p .builds/windows/tools/
