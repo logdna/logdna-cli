@@ -24,7 +24,7 @@ module.exports = function(grunt) {
                 cmd: 'nexe -i index.js -o ' + buildOutputFile + ' -f -t ~/tmp -r 5.9.0'
                 , maxBuffer: 20000 * 1024
             }, circle_nexe: {
-                cmd: 'nexe -i index.js -o logdna.exe -f -t ~/tmp -r 8.11.3'
+                cmd: 'nexe -i index.js -o logdna.exe -f -t ~/tmp -r 5.9.0'
                 , maxBuffer: 20000 * 1024
             }, save_version: 'echo ' + pkg.version + ' > version'
             , fpm_osxpkg: 'fpm -s dir -t osxpkg --osxpkg-identifier-prefix com.logdna -n logdna-cli -v ' + pkg.version + ' --post-install ./scripts/post-install -f ./logdna=/usr/local/logdna/bin/logdna'
