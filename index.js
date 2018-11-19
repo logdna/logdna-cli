@@ -146,16 +146,18 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
                         utils.apiPost(config, 'login', {
                             auth: email + ':' + password
-                        }, function(body) {
+                        }, function(error, body) {
+                            if (error) return utils.log(error);
+
                             config.email = email;
-                            if (body.accounts.length && config.account !== body.accounts[0]) {
+                            if (body && body.accounts.length && config.account !== body.accounts[0]) {
                                 config.account = body.accounts[0];
                                 config.key = null;
                             }
-                            if (body.keys && body.keys.length) config.key = body.keys[0];
+                            if (body && body.keys && body.keys.length) config.key = body.keys[0];
                             config.token = body.token;
 
-                            if (body.servicekeys && body.servicekeys.length) config.servicekey = body.servicekeys[0];
+                            if (body && body.servicekeys && body.servicekeys.length) config.servicekey = body.servicekeys[0];
 
                             utils.saveConfig(config, function() {
                                 utils.log('Logged in successfully as: ' + email + '. Saving credentials to local config.');
