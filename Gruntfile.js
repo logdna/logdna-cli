@@ -1,30 +1,26 @@
-const os = require('os');
-const fs = require('fs');
-const grunt = require('grunt');
-const path = require('path');
-const pkg = require('./package.json');
+var os = require('os');
+var grunt = require('grunt');
+var path = require('path');
+var pkg = require('./package.json');
 
 require('load-grunt-tasks')(grunt);
 
 module.exports = function(grunt) {
-    const files = ['./index.js', './Gruntfile.js', 'lib/**/*.js', 'test/**/*.js'];
-    const buildOutputFile = os.platform() !== 'win32' ? 'logdna' : 'logdna.exe';
+    var files = ['./index.js', './Gruntfile.js', 'lib/**/*.js', 'test/**/*.js'];
+    var buildOutputFile = os.platform() !== 'win32' ? 'logdna' : 'logdna.exe';
+
     grunt.initConfig({
         lineremover: {
             nukebrowser: {
                 files: {
                     'node_modules/ws/package.json': path.join('node_modules', 'ws', 'package.json')
-                }
-                , options: {
+                }, options: {
                     exclusionPattern: /browser/
                 }
             }
         }, exec: {
             nexe: {
                 cmd: 'nexe -i index.js -o ' + buildOutputFile + ' -f -t ~/tmp -r 5.9.0'
-                , maxBuffer: 20000 * 1024
-            }, circle_nexe: {
-                cmd: 'nexe -i index.js -o logdna.exe -f -t ~/tmp -r 5.9.0'
                 , maxBuffer: 20000 * 1024
             }, save_version: 'echo ' + pkg.version + ' > version'
             , fpm_osxpkg: 'fpm -s dir -t osxpkg --osxpkg-identifier-prefix com.logdna -n logdna-cli -v ' + pkg.version + ' --post-install ./scripts/post-install -f ./logdna=/usr/local/logdna/bin/logdna'
@@ -45,18 +41,11 @@ module.exports = function(grunt) {
             , upload_linuxver: 'aws s3 cp ./version s3://repo.logdna.com/linux/version'
             , upload_rpm: 'aws s3 cp ./logdna-cli.rpm s3://repo.logdna.com/linux/logdna-cli.rpm'
             , upload_deb: 'aws s3 cp ./logdna-cli.deb s3://repo.logdna.com/linux/logdna-cli.deb'
-            , upload_nupkg: 'aws s3 cp ./.builds/windows/bin/Debug/logdna.1.3.0.nupkg s3://repo.logdna.com/win/logdna.1.3.0.nupkg'
             , choco: 'pushd .\\.builds\\windows & cpack'
-            , dotnet: 'cd .builds/windows && dotnet pack'
         }, copy: {
             nuspec: {
                 files: [{
                     src: './logdna.nuspec'
-                    , dest: './.builds/windows/'
-                }]
-            }, csproj: {
-                files: [{
-                    src: './logdna.csproj'
                     , dest: './.builds/windows/'
                 }]
             }, winexe: {
@@ -78,5 +67,4 @@ module.exports = function(grunt) {
     grunt.registerTask('linux', ['build', 'exec:fpm_rpm', 'exec:fpm_deb', 'exec:cp_rpm', 'exec:cp_deb', 'exec:gzip_linuxbin', 'exec:upload_linuxbin', 'exec:upload_linuxver', 'exec:upload_rpm', 'exec:upload_deb']);
     grunt.registerTask('mac', ['build', 'exec:fpm_osxpkg', 'exec:sign_pkg', 'exec:rm_unsignedpkg', 'exec:gzip_macbin', 'exec:upload_macbin', 'exec:upload_macver', 'exec:upload_pkg']); // 'exec:verify_pkg', 'exec:install_pkg'
     grunt.registerTask('windows', ['build', 'copy:nuspec', 'copy:winexe', 'exec:choco']);
-    grunt.registerTask('circle_windows', ['lineremover', 'exec:circle_nexe', 'exec:save_version', 'copy:nuspec', 'copy:winexe', 'copy:csproj', 'exec:dotnet', 'exec:upload_nupkg']);
 };
