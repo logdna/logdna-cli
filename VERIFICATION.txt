@@ -2,3 +2,12 @@ VERIFICATION
 Verification is intended to assist the Chocolatey moderators and community
 in verifying that this package's contents are trustworthy.
 
+To verify the logdna.exe:
+
+1. Download <https://s3.amazonaws.com/repo.logdna.com/win/logdna.1.3.0.zip> which includes "logdna.exe"
+2. You can use one of the following methods to obtain the checksum
+  - Use powershell function 'Get-Filehash'
+  - Use chocolatey utility 'checksum.exe'
+
+  checksum type: sha256
+  checksum: 2b6878410d54e81bbe495b3f0d7b429be8bd45299ac56ac2d222ebc5063c3bc0
