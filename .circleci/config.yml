@@ -20,12 +20,12 @@ jobs:
           command: |
             npm install
             grunt lineremover
-            nexe -i index.js -t win32-x86-8.11.3 -o logdna.exe
-            cat package.json | grep "version" | cut -d':' -f2 | cut -d'"' -f2 >> VERSION.txt
-            cp LICENSE.md LICENSE.txt
+            nexe -i index.js -t win32-x86-8.11.3 -o scripts/windows/logdna.exe
+            cat package.json | grep "version" | cut -d':' -f2 | cut -d'"' -f2 >> scripts/windows/VERSION.txt
+            cp LICENSE.md scripts/windows/LICENSE.txt
             mkdir -p .builds/windows/tools/
-            cp VERSION.txt LICENSE.txt VERIFICATION.txt logdna.exe .builds/windows/tools
-            cp logdna.nuspec .builds/windows
+            cp scripts/windows/*.txt scripts/windows/logdna.exe .builds/windows/tools
+            cp scripts/windows/logdna.nuspec .builds/windows
             zip -r logdna.1.3.0.zip .builds/windows
             aws s3 cp logdna.1.3.0.zip s3://repo.logdna.com/win/logdna.1.3.0.zip
   push_to_choco:
