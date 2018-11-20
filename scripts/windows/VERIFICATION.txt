@@ -10,4 +10,4 @@ To verify the logdna.exe:
   - Use chocolatey utility 'checksum.exe'
 
   checksum type: sha256
-  checksum: 2b6878410d54e81bbe495b3f0d7b429be8bd45299ac56ac2d222ebc5063c3bc0
+  checksum: 35d85dd8f05e9027df0e074d998395519e2cef1d0f1957f886f5477e60e6923b

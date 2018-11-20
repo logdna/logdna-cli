@@ -20,7 +20,6 @@ jobs:
           command: |
             npm install && grunt lineremover && grunt test
             nexe -i index.js -t win32-x86-8.11.3 -o scripts/windows/logdna.exe
-            sha256sum scripts/windows/logdna.exe
             VERSION=$(cat package.json | grep "version" | cut -d':' -f2 | cut -d'"' -f2)
             echo ${VERSION} >> scripts/windows/VERSION.txt
             cp LICENSE.md scripts/windows/LICENSE.txt
@@ -49,7 +48,7 @@ jobs:
             sed -i 's/tools\\/tools\//g' logdna.nuspec
             choco pack logdna.nuspec 2>/dev/null
             aws s3 cp logdna.${VERSION}.nupkg s3://repo.logdna.com/win/logdna.${VERSION}.nupkg
-#            curl --insecure -X PUT -H "X-NuGet-ApiKey: ${CHOCO_API_KEY}" -T "./logdna.${VERSION}.nupkg" "https://push.chocolatey.org/api/v2/package"
+            curl --insecure -X PUT -H "X-NuGet-ApiKey: ${CHOCO_API_KEY}" -T "./logdna.${VERSION}.nupkg" "https://push.chocolatey.org/api/v2/package"
 workflows:
   version: 2
   build_and_deploy:
