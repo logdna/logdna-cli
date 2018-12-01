@@ -14,14 +14,15 @@ module.exports = function(grunt) {
             nukebrowser: {
                 files: {
                     'node_modules/ws/package.json': path.join('node_modules', 'ws', 'package.json')
-                }
-                , options: {
+                }, options: {
                     exclusionPattern: /browser/
                 }
             }
         }, exec: {
-            nexe: { cmd: 'nexe -i index.js -o ' + buildOutputFile + ' -f -t ~/tmp -r 5.9.0', maxBuffer: 20000 * 1024 }
-            , save_version: 'echo ' + pkg.version + ' > version'
+            nexe: {
+                cmd: 'nexe -i index.js -o ' + buildOutputFile + ' -f -t ~/tmp -r 5.9.0'
+                , maxBuffer: 20000 * 1024
+            }, save_version: 'echo ' + pkg.version + ' > version'
             , fpm_osxpkg: 'fpm -s dir -t osxpkg --osxpkg-identifier-prefix com.logdna -n logdna-cli -v ' + pkg.version + ' --post-install ./scripts/post-install -f ./logdna=/usr/local/logdna/bin/logdna'
             , sign_pkg: 'productsign --sign "Developer ID Installer: Answerbook, Inc. (TT7664HMU3)" logdna-cli-' + pkg.version + '.pkg logdna-cli.pkg'
             , verify_pkg: 'spctl -a -t install -vv logdna-cli.pkg'
