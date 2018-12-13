@@ -347,8 +347,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                         body = _.compact(body);
                     }
 
-
-                    utils.log('search finished: ' + body.length + ' line(s)' + (range || '') +
+                    utils.log('search finished: ' + (body ? body.length : 0) + ' line(s)' + (range || '') +
                         '. hosts: ' + (options.hosts || 'all') +
                         '. apps: ' + (options.apps || 'all') +
                         '. levels: ' + (options.levels || (options.debug ? 'all' : '-debug')) +
