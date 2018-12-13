@@ -327,14 +327,15 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
                 var t, t2, range;
 
-                utils.apiGet(modifiedconfig, 'v1/export', params, function(body) {
-                    if (body.range && body.range.from && body.range.to) {
+                utils.apiGet(modifiedconfig, 'v1/export', params, function(error, body) {
+                    if (error) return utils.log(error);
+                    if (body && body.range && body.range.from && body.range.to) {
                         t = new Date(body.range.from);
                         t2 = new Date(body.range.to);
                         range = ' between ' + t.toString().substring(4, 11) + t.toString().substring(16, 24) +
                             '-' + t2.toString().substring(4, 11) + t2.toString().substring(16, 24);
                     }
-                    if (typeof body === 'string') {
+                    if (body && typeof body === 'string') {
                         body = body.split('\n');
                         body = body.map(function(x) {
                             try {
