@@ -222,7 +222,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                     }
 
                     if (Array.isArray(data.p)) {
-                        _.each(data.p, function(line) {
+                        data.p.forEach(function(line) {
                             utils.renderLine(config, line, params);
                         });
                     } else {
@@ -364,7 +364,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
                     var last_timestamp = new Date(body[0]._ts);
 
-                    _.each(body, function(line) {
+                    body.forEach(function(line) {
                         t = new Date(line._ts);
                         if (options.preferHead && last_timestamp < t) {
                             last_timestamp = t;
