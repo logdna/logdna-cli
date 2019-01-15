@@ -341,7 +341,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                         range = ' between ' + t.toString().substring(4, 11) + t.toString().substring(16, 24) +
                             '-' + t2.toString().substring(4, 11) + t2.toString().substring(16, 24);
                     }
-                    if (body && typeof body === 'string') {
+                    if (_.isString(body)) {
                         body = body.split('\n');
                         body = body.map(function(x) {
                             try {
@@ -351,6 +351,8 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                             }
                         });
                         body = _.compact(body);
+                    } else if (_.isPlainObject(body)) {
+                        body = [body];
                     }
 
                     utils.log('search finished: ' + (body ? body.length : 0) + ' line(s)' + (range || '') +
