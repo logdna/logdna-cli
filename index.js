@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const program = require('commander');
 const properties = require('properties');
 const qs = require('querystring');
@@ -34,7 +33,7 @@ program
 properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
     path: true
 }, function(error, parsedConfig) {
-    const config = _.merge(require('./lib/config'), parsedConfig || {});
+    const config = Object.assign(require('./lib/config'), parsedConfig || {});
 
     utils.performUpgrade(config, function() {
         program.command('register [email] [key]')
@@ -101,7 +100,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
         program.command('ssologin')
             .description('Login to a LogDNA user account via Single Signon')
             .action(function() {
-                var token = _.random(800000000, 4000000000).toString(16);
+                var token = Math.floor((Math.random() * 4000000000) + 800000000).toString(16);
                 var pollTimeout;
 
                 utils.log('To sign in via SSO, use a web browser to open the page ' + config.SSO_URL + token);
@@ -216,9 +215,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                     }
 
                     if (Array.isArray(data.p)) {
-                        _.each(data.p, function(line) {
-                            utils.renderLine(config, line, params);
-                        });
+                        data.p.forEach(line => utils.renderLine(config, line, params));
                     } else {
                         utils.renderLine(config, data.p, params);
                     }
@@ -336,14 +333,13 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                     }
                     if (typeof body === 'string') {
                         body = body.split('\n');
-                        body = body.map(function(x) {
+                        body = body.map((x) => {
                             try {
                                 return JSON.parse(x);
                             } catch (err) {
                                 return 0;
                             }
-                        });
-                        body = _.compact(body);
+                        }).filter(element => element);
                     }
 
 
@@ -358,7 +354,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
                     var last_timestamp = new Date(body[0]._ts);
 
-                    _.each(body, function(line) {
+                    body.forEach((line) => {
                         t = new Date(line._ts);
                         if (options.preferHead && last_timestamp < t) {
                             last_timestamp = t;
