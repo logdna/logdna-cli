@@ -103,7 +103,13 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                 var token = Math.floor((Math.random() * 4000000000) + 800000000).toString(16);
                 var pollTimeout;
 
-                utils.log('To sign in via SSO, use a web browser to open the page ' + config.SSO_URL + token);
+                // Overide SSO URL if using a custom environment
+                var sso_url = config.SSO_URL;
+                if (config.LOGDNA_APPHOST) {
+                    sso_url = config.LOGDNA_APPHOST + config.SSO_LONG_PATH;
+                }
+
+                utils.log('To sign in via SSO, use a web browser to open the page ' + sso_url + token);
 
                 var pollToken = function() {
                     utils.apiPost(config, 'sso', {
@@ -324,14 +330,15 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
                 var t, t2, range;
 
-                utils.apiGet(modifiedconfig, 'v1/export', params, function(body) {
-                    if (body.range && body.range.from && body.range.to) {
+                utils.apiGet(modifiedconfig, 'v1/export', params, function(error, body) {
+                    if (error) return utils.log(error);
+                    if (body && body.range && body.range.from && body.range.to) {
                         t = new Date(body.range.from);
                         t2 = new Date(body.range.to);
                         range = ' between ' + t.toString().substring(4, 11) + t.toString().substring(16, 24) +
                             '-' + t2.toString().substring(4, 11) + t2.toString().substring(16, 24);
                     }
-                    if (typeof body === 'string') {
+                    if (_.isString(body)) {
                         body = body.split('\n');
                         body = body.map((x) => {
                             try {
@@ -342,8 +349,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                         }).filter(element => element);
                     }
 
-
-                    utils.log('search finished: ' + body.length + ' line(s)' + (range || '') +
+                    utils.log('search finished: ' + (body ? body.length : 0) + ' line(s)' + (range || '') +
                         '. hosts: ' + (options.hosts || 'all') +
                         '. apps: ' + (options.apps || 'all') +
                         '. levels: ' + (options.levels || (options.debug ? 'all' : '-debug')) +
