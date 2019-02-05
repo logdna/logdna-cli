@@ -35,7 +35,8 @@ logdna
 logdna-cli.pkg
 logdna.gz
 version
+package-lock.json
 
-#Packages
+# Packages
 *.rpm
 *.deb
