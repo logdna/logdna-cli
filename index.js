@@ -58,7 +58,8 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                                     , firstname: firstname
                                     , lastname: lastname
                                     , company: company
-                                }, function(body) {
+                                }, function(error, body) {
+                                    if (error) return utils.log(error);
                                     config.email = email;
 
                                     if (config.account !== body.account) {
@@ -116,7 +117,8 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                     utils.apiPost(config, 'sso', {
                         auth: false
                         , token: token
-                    }, function(body) {
+                    }, function(error, body) {
+                        if (error) return utils.log(error);
                         if (!body || !body.email) return;
                         clearTimeout(pollTimeout);
 
@@ -249,7 +251,8 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
         program.command('switch')
             .description('Switch between multiple accounts if your login has access to more than one')
             .action(function(options) {
-                utils.apiGet(config, 'orgs', {}, function(body) {
+                utils.apiGet(config, 'orgs', {}, function(error, body) {
+                    if (error) return utils.log(error);
                     body = JSON.parse(body);
                     if (!body || (body.length && body.length < 2)) return utils.log('Your login ' + config.email + ' doesn\'t belong to other accounts. Ensure the other owner has added your email.');
 
@@ -386,7 +389,8 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
             .alias('whoami')
             .description('Show current logged in user info')
             .action(function() {
-                utils.apiGet(config, 'info', function(body) {
+                utils.apiGet(config, 'info', function(error, body) {
+                    if (error) return utils.log(error);
                     utils.log(body);
                 });
             });
