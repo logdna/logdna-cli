@@ -1,13 +1,21 @@
+#!/usr/bin/env node
+/* globals process */
+// override es6 promise with bluebird
+Promise = require('bluebird'); // eslint-disable-line
 const _ = require('lodash');
 const program = require('commander');
-const properties = require('properties');
+const properties = Promise.promisifyAll(require('properties'));
 const qs = require('querystring');
+const os = require('os');
 
 const pkg = require('./package.json');
 const WebSocket = require('./lib/logdna-websocket');
 const input = require('./lib/input');
 const utils = require('./lib/utils');
 const EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+
+var config = require('./lib/config');
+var isWinAdmin;
 
 process.title = 'logdna';
 program._name = 'logdna';
@@ -31,13 +39,35 @@ program
         utils.log();
     });
 
-properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
-    path: true
-}, function(error, parsedConfig) {
+if (os.platform() === 'win32') isWinAdmin = require('is-administrator');
 
-    const config = _.merge(require('./lib/config'), parsedConfig || {});
+function checkElevated() {
+    return new Promise(resolve => {
+        if (os.platform() === 'win32') {
+            resolve(isWinAdmin());
+        } else if (process.getuid() <= 0) {
+            resolve(true);
+        } else {
+            resolve(false);
+        }
+    });
+};
 
-    utils.performUpgrade(config, false, function() {
+checkElevated()
+    .then(isElevated => {
+        if (!isElevated) {
+            console.log('You must be an Administrator (root, sudo) run this agent! See -h or --help for more info.');
+            process.exit();
+        }
+
+        return properties.parseAsync(config.DEFAULT_CONF_FILE, {
+            path: true
+        }).catch(() => {});
+    })
+    .then(parsedConfig => {
+
+        config = _.merge(config, parsedConfig || {});
+
         program.command('register [email] [key]')
             .description('Register a new LogDNA account. [key] is optional and will autogenerate')
             .action(function(email, key) {
@@ -75,6 +105,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
                                     if (body.servicekeys && body.servicekeys.length) config.servicekey = body.servicekeys[0];
 
+                                    console.log(`Register: ${JSON.stringify(config).length}`);
                                     utils.saveConfig(config, function(error, success) {
                                         if (error) return utils.log(error);
                                         utils.log('Thank you for signing up! Your Ingestion Key is: ' + body.key + '. Saving credentials to local config.');
@@ -130,6 +161,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
                         if (body.servicekeys && body.servicekeys.length) config.servicekey = body.servicekeys[0];
 
+                        console.log(`SSOLogin: ${JSON.stringify(config).length}`);
                         utils.saveConfig(config, function(error, success) {
                             if (error) return utils.log(error);
                             utils.log('Logged in successfully as: ' + body.email + '. Saving credentials to local config.');
@@ -166,6 +198,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
                             if (body && body.servicekeys && body.servicekeys.length) config.servicekey = body.servicekeys[0];
 
+                            console.log(`Login: ${JSON.stringify(config).length}`);
                             utils.saveConfig(config, function(error, success) {
                                 if (error) return utils.log(error);
                                 utils.log('Logged in successfully as: ' + email + '. Saving credentials to local config.');
@@ -227,9 +260,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                         data.p.forEach(function(line) {
                             utils.renderLine(config, line, params);
                         });
-                    } else {
-                        utils.renderLine(config, data.p, params);
-                    }
+                    } else utils.renderLine(config, data.p, params);
                 });
 
                 ws.on('error', function(err) {
@@ -269,6 +300,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
                         config.account = body[selection].id;
                         config.servicekey = body[selection].servicekeys[0];
+                        console.log(`Switch: ${JSON.stringify(config).length}`);
                         utils.saveConfig(config, function(error, success) {
                             if (error) return utils.log(error);
                             utils.log('Successfully switched account to ' + body[selection].name);
@@ -382,6 +414,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                     });
 
                     config.last_timestamp = last_timestamp.toJSON();
+                    console.log(`Search: ${JSON.stringify(config).length}`);
                     utils.saveConfig(config, function(error, success) {
                         if (error) return utils.log(error);
                     });
@@ -412,4 +445,21 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
         program.parse(process.argv);
         if (!process.argv.slice(2).length) return program.outputHelp(); // show help if no commands given
     });
+
+Promise.onPossiblyUnhandledRejection(function(error) {
+    throw error;
 });
+
+process.on('uncaughtException', function(err) {
+    utils.log('------------------------------------------------------------------');
+    utils.log('Uncaught Error: ' + (err.stack || '').split('\r\n'));
+    utils.log('------------------------------------------------------------------');
+});
+
+process.once('SIGTERM', function() {
+    utils.log('Got SIGTERM signal, shutting down...');
+}); // kill
+
+process.once('SIGINT', function() {
+    utils.log('Got SIGINT signal, shutting down...');
+}); // ctrl+c
