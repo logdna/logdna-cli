@@ -34,9 +34,10 @@ program
 properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
     path: true
 }, function(error, parsedConfig) {
+
     const config = _.merge(require('./lib/config'), parsedConfig || {});
 
-    utils.performUpgrade(config, function() {
+    utils.performUpgrade(config, false, function() {
         program.command('register [email] [key]')
             .description('Register a new LogDNA account. [key] is optional and will autogenerate')
             .action(function(email, key) {
@@ -107,10 +108,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
                 // Overide SSO URL if using a custom environment
                 var sso_url = config.SSO_URL;
-                if (config.LOGDNA_APPHOST) {
-                    sso_url = config.LOGDNA_APPHOST + config.SSO_LONG_PATH;
-                }
-
+                if (config.LOGDNA_APPHOST) sso_url = config.LOGDNA_APPHOST + config.SSO_LONG_PATH;
                 utils.log('To sign in via SSO, use a web browser to open the page ' + sso_url + token);
 
                 var pollToken = function() {
@@ -335,7 +333,7 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                 var modifiedconfig = JSON.parse(JSON.stringify(config));
 
                 // this prevents export API from emailing the results
-                delete modifiedconfig.email;
+                modifiedconfig = _.omit(modifiedconfig, ['email']);
 
                 var t, t2, range;
 
