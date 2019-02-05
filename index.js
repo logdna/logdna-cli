@@ -74,15 +74,15 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
                                     if (body.servicekeys && body.servicekeys.length) config.servicekey = body.servicekeys[0];
 
-                                    utils.saveConfig(config, function() {
+                                    utils.saveConfig(config, function(error, success) {
+                                        if (error) return utils.log(error);
                                         utils.log('Thank you for signing up! Your Ingestion Key is: ' + body.key + '. Saving credentials to local config.');
                                         utils.log();
                                         utils.log('Next steps:');
                                         utils.log('===========');
                                         utils.log('1) We\'ve sent you a welcome email to create your password. Once set, come back here and use \'logdna login\'');
                                         utils.log('2) Type \'logdna install\' for more info on collecting your logs via our agent, syslog, Heroku, API, etc.');
-                                        utils.log();
-                                        return;
+                                        return utils.log();
                                     });
                                 });
                             });
@@ -132,7 +132,8 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
                         if (body.servicekeys && body.servicekeys.length) config.servicekey = body.servicekeys[0];
 
-                        utils.saveConfig(config, function() {
+                        utils.saveConfig(config, function(error, success) {
+                            if (error) return utils.log(error);
                             utils.log('Logged in successfully as: ' + body.email + '. Saving credentials to local config.');
                         });
                     });
@@ -167,7 +168,8 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
                             if (body && body.servicekeys && body.servicekeys.length) config.servicekey = body.servicekeys[0];
 
-                            utils.saveConfig(config, function() {
+                            utils.saveConfig(config, function(error, success) {
+                                if (error) return utils.log(error);
                                 utils.log('Logged in successfully as: ' + email + '. Saving credentials to local config.');
                             });
                         });
@@ -269,7 +271,8 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
 
                         config.account = body[selection].id;
                         config.servicekey = body[selection].servicekeys[0];
-                        utils.saveConfig(config, function() {
+                        utils.saveConfig(config, function(error, success) {
+                            if (error) return utils.log(error);
                             utils.log('Successfully switched account to ' + body[selection].name);
                         });
                     });
@@ -381,7 +384,9 @@ properties.parse(require('./lib/config').DEFAULT_CONF_FILE, {
                     });
 
                     config.last_timestamp = last_timestamp.toJSON();
-                    utils.saveConfig(config);
+                    utils.saveConfig(config, function(error, success) {
+                        if (error) return utils.log(error);
+                    });
                 });
             });
 
