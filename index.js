@@ -68,6 +68,10 @@ checkElevated()
 
         config = _.merge(config, parsedConfig || {});
 
+        utils.performUpgrade(config, error => {
+            if (error) utils.log(error);
+        });
+
         program.command('register [email] [key]')
             .description('Register a new LogDNA account. [key] is optional and will autogenerate')
             .action(function(email, key) {
@@ -105,7 +109,6 @@ checkElevated()
 
                                     if (body.servicekeys && body.servicekeys.length) config.servicekey = body.servicekeys[0];
 
-                                    console.log(`Register: ${JSON.stringify(config).length}`);
                                     utils.saveConfig(config, function(error, success) {
                                         if (error) return utils.log(error);
                                         utils.log('Thank you for signing up! Your Ingestion Key is: ' + body.key + '. Saving credentials to local config.');
@@ -161,7 +164,6 @@ checkElevated()
 
                         if (body.servicekeys && body.servicekeys.length) config.servicekey = body.servicekeys[0];
 
-                        console.log(`SSOLogin: ${JSON.stringify(config).length}`);
                         utils.saveConfig(config, function(error, success) {
                             if (error) return utils.log(error);
                             utils.log('Logged in successfully as: ' + body.email + '. Saving credentials to local config.');
@@ -198,7 +200,6 @@ checkElevated()
 
                             if (body && body.servicekeys && body.servicekeys.length) config.servicekey = body.servicekeys[0];
 
-                            console.log(`Login: ${JSON.stringify(config).length}`);
                             utils.saveConfig(config, function(error, success) {
                                 if (error) return utils.log(error);
                                 utils.log('Logged in successfully as: ' + email + '. Saving credentials to local config.');
@@ -300,7 +301,6 @@ checkElevated()
 
                         config.account = body[selection].id;
                         config.servicekey = body[selection].servicekeys[0];
-                        console.log(`Switch: ${JSON.stringify(config).length}`);
                         utils.saveConfig(config, function(error, success) {
                             if (error) return utils.log(error);
                             utils.log('Successfully switched account to ' + body[selection].name);
@@ -414,7 +414,6 @@ checkElevated()
                     });
 
                     config.last_timestamp = last_timestamp.toJSON();
-                    console.log(`Search: ${JSON.stringify(config).length}`);
                     utils.saveConfig(config, function(error, success) {
                         if (error) return utils.log(error);
                     });
