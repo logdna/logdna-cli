@@ -2,7 +2,6 @@
 /* globals process */
 // override es6 promise with bluebird
 Promise = require('bluebird'); // eslint-disable-line
-const _ = require('lodash');
 const program = require('commander');
 const properties = Promise.promisifyAll(require('properties'));
 const qs = require('querystring');
@@ -66,7 +65,7 @@ checkElevated()
     })
     .then(parsedConfig => {
 
-        config = _.merge(config, parsedConfig || {});
+        config = Object.assign(config, parsedConfig || {});
 
         utils.performUpgrade(config, error => {
             if (error) utils.log(error);
@@ -137,7 +136,7 @@ checkElevated()
         program.command('ssologin')
             .description('Login to a LogDNA user account via Single Signon')
             .action(function() {
-                var token = _.random(800000000, 4000000000).toString(16);
+                var token = Math.floor((Math.random() * 4000000000) + 800000000).toString(16);
                 var pollTimeout;
 
                 // Overide SSO URL if using a custom environment
@@ -258,9 +257,7 @@ checkElevated()
                     }
 
                     if (Array.isArray(data.p)) {
-                        data.p.forEach(function(line) {
-                            utils.renderLine(config, line, params);
-                        });
+                        data.p.forEach(line => utils.renderLine(config, line, params));
                     } else utils.renderLine(config, data.p, params);
                 });
 
@@ -365,7 +362,7 @@ checkElevated()
                 var modifiedconfig = JSON.parse(JSON.stringify(config));
 
                 // this prevents export API from emailing the results
-                modifiedconfig = _.omit(modifiedconfig, ['email']);
+                delete modifiedconfig.email;
 
                 var t, t2, range;
 
@@ -377,18 +374,15 @@ checkElevated()
                         range = ' between ' + t.toString().substring(4, 11) + t.toString().substring(16, 24) +
                             '-' + t2.toString().substring(4, 11) + t2.toString().substring(16, 24);
                     }
-                    if (_.isString(body)) {
+                    if (typeof body === 'string') {
                         body = body.split('\n');
-                        body = body.map(function(x) {
+                        body = body.map((x) => {
                             try {
                                 return JSON.parse(x);
                             } catch (err) {
                                 return 0;
                             }
-                        });
-                        body = _.compact(body);
-                    } else if (_.isPlainObject(body)) {
-                        body = [body];
+                        }).filter(element => element);
                     }
 
                     utils.log('search finished: ' + (body ? body.length : 0) + ' line(s)' + (range || '') +
@@ -402,7 +396,7 @@ checkElevated()
 
                     var last_timestamp = new Date(body[0]._ts);
 
-                    body.forEach(function(line) {
+                    body.forEach((line) => {
                         t = new Date(line._ts);
                         if (options.preferHead && last_timestamp < t) {
                             last_timestamp = t;

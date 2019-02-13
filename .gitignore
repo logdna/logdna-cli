@@ -37,6 +37,10 @@ logdna.gz
 version
 package-lock.json
 
+# Some extra data
+package-lock.json
+*~
+
 # Packages
 *.rpm
 *.deb
