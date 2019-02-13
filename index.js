@@ -374,7 +374,7 @@ checkElevated()
                         range = ' between ' + t.toString().substring(4, 11) + t.toString().substring(16, 24) +
                             '-' + t2.toString().substring(4, 11) + t2.toString().substring(16, 24);
                     }
-                    if (_.isString(body)) {
+                    if (typeof body === 'string') {
                         body = body.split('\n');
                         body = body.map((x) => {
                             try {
