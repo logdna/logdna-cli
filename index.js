@@ -528,10 +528,6 @@ properties.parse(config.DEFAULT_CONF_FILE, {
     }
 });
 
-Promise.onPossiblyUnhandledRejection(function(error) {
-    throw error;
-});
-
 process.on('uncaughtException', function(err) {
     utils.log('------------------------------------------------------------------');
     utils.log('Uncaught Error: ' + (err.stack || '').split('\r\n'));
