@@ -142,7 +142,7 @@ properties.parse(config.DEFAULT_CONF_FILE, {
                     }
 
                     if (!body || !body.email) {
-                        return utils.log('Cannot Authenticate!');
+                        return;
                     }
 
                     clearTimeout(pollTimeout);
