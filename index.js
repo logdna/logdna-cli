@@ -5,13 +5,13 @@ const program = require('commander');
 const properties = require('properties');
 const qs = require('querystring');
 
-const pkg = require('./package.json');
 const WebSocket = require('./lib/logdna-websocket');
 const input = require('./lib/input');
 const utils = require('./lib/utils');
-const EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
-
 var config = require('./lib/config');
+
+const pkg = require('./package.json');
+const EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
 
 process.title = 'logdna';
 program._name = 'logdna';
@@ -23,7 +23,6 @@ program
         utils.log('  Examples:');
         utils.log();
         utils.log('    $ logdna register user@example.com');
-        utils.log('    $ logdna register user@example.com b7c0487cfa5fa7327c9a166c6418598d    # use this if you were assigned an Ingestion Key');
         utils.log('    $ logdna tail \'("timed out" OR "connection refused") -request\'');
         utils.log('    $ logdna tail -a access.log 500');
         utils.log('    $ logdna tail -l error,warn');
@@ -42,38 +41,31 @@ properties.parse(config.DEFAULT_CONF_FILE, {
     config = Object.assign(config, parsedConfig || {});
 
     utils.performUpgrade(config, function(error) {
-        if (error) {
-            return utils.log(error);
-        }
+        if (error) return utils.log(error);
     });
 
-    program.command('register [email] [key]')
-        .description('Register a new LogDNA account. [key] is optional and will autogenerate')
-        .action(function(email, key) {
+    program.command('register [email]')
+        .description('Register a new LogDNA account.')
+        .action((email) => {
             const nextstep = function(email) {
                 email = email.toLowerCase();
 
-                if (!EMAIL_REGEX.test(email)) {
-                    return utils.log(`Invalid Email Address: ${email}`);
-                }
+                if (!EMAIL_REGEX.test(email)) return utils.log(`Invalid Email Address: ${email}`);
 
                 input.required('First name: ', function(firstname) {
                     input.required('Last name: ', function(lastname) {
                         input.required('Company/Organization: ', function(company) {
                             input.done();
 
-                            key = (key || '').toLowerCase();
                             utils.apiPost(config, 'register', {
                                 auth: false
                                 , email: email
-                                , key: key
                                 , firstname: firstname
                                 , lastname: lastname
                                 , company: company
                             }, function(error, body) {
-                                if (error) {
-                                    return utils.log(error);
-                                }
+                                if (error) return utils.log(error);
+                                if (body && body.error) return utils.log(body.error);
 
                                 config.email = email;
 
@@ -85,18 +77,11 @@ properties.parse(config.DEFAULT_CONF_FILE, {
 
                                 config.key = body.key;
 
-                                if (body.token) {
-                                    config.token = body.token; // save token if available
-                                }
-
-                                if (body.servicekeys && body.servicekeys.length) {
-                                    config.servicekey = body.servicekeys[0];
-                                }
+                                if (body.token) config.token = body.token; // save token if available
+                                if (body.servicekeys && body.servicekeys.length) config.servicekey = body.servicekeys[0];
 
                                 utils.saveConfig(config, function(error, success) {
-                                    if (error) {
-                                        return utils.log(error);
-                                    }
+                                    if (error) return utils.log(error);
 
                                     utils.log('Thank you for signing up! Your Ingestion Key is: ' + body.key + '. Saving credentials to local config.');
                                     utils.log();
@@ -137,13 +122,8 @@ properties.parse(config.DEFAULT_CONF_FILE, {
                     auth: false
                     , token: token
                 }, function(error, body) {
-                    if (error) {
-                        return utils.log(error);
-                    }
-
-                    if (!body || !body.email) {
-                        return;
-                    }
+                    if (error) return utils.log(error);
+                    if (!body || !body.email) return;
 
                     clearTimeout(pollTimeout);
 
@@ -153,22 +133,16 @@ properties.parse(config.DEFAULT_CONF_FILE, {
                         config.account = body.accounts[0];
                         config.key = null;
                     }
-                    if (body.keys && body.keys.length) {
-                        config.key = body.keys[0];
-                    }
+
+                    if (body.keys && body.keys.length) config.key = body.keys[0];
+                    if (body.servicekeys && body.servicekeys.length) config.servicekey = body.servicekeys[0];
 
                     config.token = body.token;
 
-                    if (body.servicekeys && body.servicekeys.length) {
-                        config.servicekey = body.servicekeys[0];
-                    }
-
                     utils.saveConfig(config, function(error, success) {
-                        if (error) {
-                            return utils.log(error);
-                        }
+                        if (error) return utils.log(error);
 
-                        utils.log(`Logged in successfully as: ${body.email}. Saving credentials to local config.`);
+                        return utils.log(`Logged in successfully as: ${body.email}. Saving credentials to local config.`);
                     });
                 });
                 pollTimeout = setTimeout(function() {
@@ -187,16 +161,12 @@ properties.parse(config.DEFAULT_CONF_FILE, {
 
                     email = email.toLowerCase();
 
-                    if (!EMAIL_REGEX.test(email)) {
-                        return utils.log('Invalid Email Address');
-                    }
+                    if (!EMAIL_REGEX.test(email)) return utils.log('Invalid Email Address');
 
                     utils.apiPost(config, 'login', {
                         auth: email + ':' + password
                     }, function(error, body) {
-                        if (error) {
-                            return utils.log(error);
-                        }
+                        if (error) return utils.log(error);
 
                         config.email = email;
 
@@ -205,22 +175,15 @@ properties.parse(config.DEFAULT_CONF_FILE, {
                             config.key = null;
                         }
 
-                        if (body && body.keys && body.keys.length) {
-                            config.key = body.keys[0];
-                        }
+                        if (body && body.keys && body.keys.length) config.key = body.keys[0];
+                        if (body && body.servicekeys && body.servicekeys.length) config.servicekey = body.servicekeys[0];
 
                         config.token = body.token;
 
-                        if (body && body.servicekeys && body.servicekeys.length) {
-                            config.servicekey = body.servicekeys[0];
-                        }
-
                         utils.saveConfig(config, function(error, success) {
-                            if (error) {
-                                return utils.log(error);
-                            }
+                            if (error) return utils.log(error);
 
-                            utils.log(`Logged in successfully as: ${email}. Saving credentials to local config.`);
+                            return utils.log(`Logged in successfully as: ${email}. Saving credentials to local config.`);
                         });
                     });
                 });
@@ -246,25 +209,11 @@ properties.parse(config.DEFAULT_CONF_FILE, {
             var params = utils.authParams(config);
             params.q = query || '';
 
-            if (options.hosts) {
-                params.hosts = options.hosts.replace(/, /g, ',');
-            }
-
-            if (options.apps) {
-                params.apps = options.apps.replace(/, /g, ',');
-            }
-
-            if (options.levels) {
-                params.levels = options.levels.replace(/, /g, ',');
-            }
-
-            if (options.tags) {
-                params.tags = options.tags.replace(/, /g, ',');
-            }
-
-            if (options.json) {
-                params.json = true;
-            }
+            if (options.hosts) params.hosts = options.hosts.replace(/, /g, ',');
+            if (options.apps) params.apps = options.apps.replace(/, /g, ',');
+            if (options.levels) params.levels = options.levels.replace(/, /g, ',');
+            if (options.tags) params.tags = options.tags.replace(/, /g, ',');
+            if (options.json) params.json = true;
 
             params.q = params.q.trim();
 
@@ -283,19 +232,16 @@ properties.parse(config.DEFAULT_CONF_FILE, {
             });
 
             ws.on('message', function(data) {
+                console.log(data);
                 if (data.substring(0, 1) === '{') {
                     data = JSON.parse(data);
-                } else {
-                    return utils.log('Malformed Line: ' + data);
-                }
+                } else return utils.log('Malformed Line: ' + data);
 
                 if (Array.isArray(data.p)) {
                     data.p.forEach(function(line) {
                         return utils.renderLine(config, line, params);
                     });
-                } else {
-                    return utils.renderLine(config, data.p, params);
-                };
+                } else return utils.renderLine(config, data.p, params);
             });
 
             ws.on('error', function(err) {
@@ -318,9 +264,7 @@ properties.parse(config.DEFAULT_CONF_FILE, {
         .description('Switch between multiple accounts if your login has access to more than one')
         .action(function(options) {
             utils.apiGet(config, 'orgs', {}, function(error, body) {
-                if (error) {
-                    return utils.log(error);
-                }
+                if (error) return utils.log(error);
 
                 body = JSON.parse(body);
 
@@ -337,25 +281,23 @@ properties.parse(config.DEFAULT_CONF_FILE, {
                     selection = parseInt(selection);
                     selection = selection - 1;
 
-                    if (selection >= body.length || selection < 0) {
-                        return utils.log('Not a Valid Number.');
-                    }
+                    if (selection >= body.length || selection < 0) return utils.log('Not a Valid Number.');
 
-                    config.account = body[selection].id;
-                    config.servicekey = body[selection].servicekeys[0];
+                    if (body[selection].id) config.account = body[selection].id;
+                    if (body[selection].servicekeys) config.servicekey = body[selection].servicekeys[0];
+                    if (body[selection].keys) config.key = body[selection].keys[0];
+
                     utils.saveConfig(config, function(error, success) {
-                        if (error) {
-                            return utils.log(error);
-                        }
+                        if (error) return utils.log(error);
 
-                        utils.log(`Successfully switched account to ${body[selection].name}!`);
+                        return utils.log(`Successfully switched account to ${body[selection].name}!`);
                     });
                 });
             });
         });
 
     program.command('search [query]')
-        .description('Limited search functionality with optional filtering (beta). See \'logdna search --help\'')
+        .description('Limited search functionality with optional filtering. See \'logdna search --help\'')
         .option('-h, --hosts <hosts>', 'Filter on hosts (separate by comma)')
         .option('-a, --apps <apps>', 'Filter on apps (separate by comma)')
         .option('-l, --levels <levels>', 'Filter on levels (separate by comma)')
@@ -371,9 +313,7 @@ properties.parse(config.DEFAULT_CONF_FILE, {
                 q: query || ''
             };
 
-            if (options.preferHead) {
-                params.prefer = 'head';
-            }
+            if (options.preferHead) params.prefer = 'head';
 
             if (options.from) {
                 try {
@@ -382,6 +322,7 @@ properties.parse(config.DEFAULT_CONF_FILE, {
                     utils.log(`Invalid Unix Timestamp: ${options.from}`);
                 }
             }
+
             if (options.to) {
                 try {
                     params.to = new Date(parseInt(options.to)).getTime();
@@ -389,14 +330,13 @@ properties.parse(config.DEFAULT_CONF_FILE, {
                     utils.log(`Invalid Unix Timestamp: ${options.to}`);
                 }
             }
+
             if (options.next) {
                 // use last search timestamps to get next block of results
                 if (config.last_timestamp) {
                     if (options.preferHead) {
                         params.from = new Date(config.last_timestamp).getTime();
-                    } else {
-                        params.to = new Date(config.last_timestamp).getTime();
-                    }
+                    } else params.to = new Date(config.last_timestamp).getTime();
                 }
             }
 
@@ -408,29 +348,13 @@ properties.parse(config.DEFAULT_CONF_FILE, {
                 }
             }
 
-            if (options.json) {
-                params.json = true;
-            }
+            if (options.json) params.json = true;
+            if (options.hosts) params.hosts = options.hosts.replace(/, /g, ',');
+            if (options.apps) params.apps = options.apps.replace(/, /g, ',');
+            if (options.levels) params.levels = options.levels.replace(/, /g, ',');
+            if (options.tags) params.tags = options.tags.replace(/, /g, ',');
 
-            if (options.hosts) {
-                params.hosts = options.hosts.replace(/, /g, ',');
-            }
-
-            if (options.apps) {
-                params.apps = options.apps.replace(/, /g, ',');
-            }
-
-            if (options.levels) {
-                params.levels = options.levels.replace(/, /g, ',');
-            }
-
-            if (options.tags) {
-                params.tags = options.tags.replace(/, /g, ',');
-            }
-
-            if (config.servicekey) {
-                params.servicekey = config.servicekey;
-            }
+            if (config.servicekey) params.servicekey = config.servicekey;
 
             var modifiedconfig = JSON.parse(JSON.stringify(config));
 
@@ -440,9 +364,7 @@ properties.parse(config.DEFAULT_CONF_FILE, {
             var t, t2, range;
 
             utils.apiGet(modifiedconfig, 'v1/export', params, function(error, body) {
-                if (error) {
-                    return utils.log(error);
-                }
+                if (error) return utils.log(error);
 
                 if (body && body.range && body.range.from && body.range.to) {
                     t = new Date(body.range.from);
@@ -470,9 +392,7 @@ properties.parse(config.DEFAULT_CONF_FILE, {
                     '. tags: ' + (options.tags || 'all') +
                     '. query: ' + (query || 'none'));
 
-                if (!(body && body.length)) {
-                    return utils.log('Returned No Lines.');
-                }
+                if (!(body && body.length)) return utils.log('Returned No Lines.');
 
                 var last_timestamp = new Date(body[0]._ts);
 
@@ -489,9 +409,7 @@ properties.parse(config.DEFAULT_CONF_FILE, {
 
                 config.last_timestamp = last_timestamp.toJSON();
                 utils.saveConfig(config, function(error, success) {
-                    if (error) {
-                        return utils.log(error);
-                    }
+                    if (error) return utils.log(error);
                 });
             });
         });
@@ -501,10 +419,8 @@ properties.parse(config.DEFAULT_CONF_FILE, {
         .description('Show current logged in user info')
         .action(function() {
             utils.apiGet(config, 'info', function(error, body) {
-                if (error) {
-                    return utils.log(error);
-                }
-                utils.log(body);
+                if (error) return utils.log(error);
+                return utils.log(body);
             });
         });
 
@@ -523,9 +439,7 @@ properties.parse(config.DEFAULT_CONF_FILE, {
 
     program.parse(process.argv);
 
-    if (!process.argv.slice(2).length) {
-        return program.outputHelp(); // show help if no commands given
-    }
+    if (!process.argv.slice(2).length) return program.outputHelp(); // show help if no commands given
 });
 
 process.on('uncaughtException', function(err) {
