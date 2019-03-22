@@ -223,7 +223,7 @@ properties.parse(config.DEFAULT_CONF_FILE, {
                 utils.log('tail started. hosts: ' + (options.hosts || 'all') +
                     '. apps: ' + (options.apps || 'all') +
                     '. tags: ' + (options.tags || 'all') +
-                    '. levels: ' + (options.levels || (options.debug ? 'all' : '-debug')) +
+                    '. levels: ' + (options.levels || 'all') +
                     '. query: ' + (query || 'none'));
             });
 
@@ -232,7 +232,6 @@ properties.parse(config.DEFAULT_CONF_FILE, {
             });
 
             ws.on('message', function(data) {
-                console.log(data);
                 if (data.substring(0, 1) === '{') {
                     data = JSON.parse(data);
                 } else return utils.log('Malformed Line: ' + data);
@@ -388,7 +387,7 @@ properties.parse(config.DEFAULT_CONF_FILE, {
                 utils.log('search finished: ' + (body ? body.length : 0) + ' line(s)' + (range || '') +
                     '. hosts: ' + (options.hosts || 'all') +
                     '. apps: ' + (options.apps || 'all') +
-                    '. levels: ' + (options.levels || (options.debug ? 'all' : '-debug')) +
+                    '. levels: ' + (options.levels || 'all') +
                     '. tags: ' + (options.tags || 'all') +
                     '. query: ' + (query || 'none'));
 
