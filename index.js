@@ -252,8 +252,8 @@ checkElevated()
                 ws.on('message', function(data) {
                     try {
                         data = JSON.parse(data);
-                    } catch(e) {
-                        return utils.log('Malformed line: ' + e);
+                    } catch (err) {
+                        return utils.log('Malformed line: ' + err);
                     }
 
                     const account = data.e;
