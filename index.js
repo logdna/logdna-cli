@@ -250,15 +250,24 @@ checkElevated()
                 });
 
                 ws.on('message', function(data) {
-                    if (data.substring(0, 1) === '{') {
+                    try {
                         data = JSON.parse(data);
-                    } else {
-                        return utils.log('Malformed line: ' + data);
+                    } catch(e) {
+                        return utils.log('Malformed line: ' + e);
                     }
 
-                    if (Array.isArray(data.p)) {
-                        data.p.forEach(line => utils.renderLine(config, line, params));
-                    } else utils.renderLine(config, data.p, params);
+                    const account = data.e;
+                    const payload = data.p;
+
+                    if (account === 'meta') return; // Ignore meta messages
+
+                    if (Array.isArray(payload)) {
+                        payload.forEach(line => {
+                            utils.renderLine(config, line, params)
+                        });
+                    } else {
+                        utils.renderLine(config, payload, params);
+                    }
                 });
 
                 ws.on('error', function(err) {
