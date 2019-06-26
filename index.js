@@ -110,12 +110,14 @@ checkElevated()
 
                                     utils.saveConfig(config, function(error, success) {
                                         if (error) return utils.log(error);
-                                        utils.log('Thank you for signing up! Your Ingestion Key is: ' + body.key + '. Saving credentials to local config.');
+                                        utils.log();
+                                        utils.log('Thank you for signing up! Saving credentials to local config.');
+                                        utils.log('Your Ingestion Key is: ' + body.key + '. ');
                                         utils.log();
                                         utils.log('Next steps:');
                                         utils.log('===========');
-                                        utils.log('1) We\'ve sent you a welcome email to create your password. Once set, come back here and use \'logdna login\'');
-                                        utils.log('2) Type \'logdna install\' for more info on collecting your logs via our agent, syslog, Heroku, API, etc.');
+                                        utils.log('1. We\'ve sent you a welcome email to create your password. Once set, come back here and use \'logdna login\'');
+                                        utils.log('2. Visit https://docs.logdna.com/docs/ingestion-methods for more info on collecting your logs via our Agent, Syslog, Heroku, API, or code library.');
                                         return utils.log();
                                     });
                                 });
