@@ -293,7 +293,7 @@ checkElevated()
             .action(function(options) {
                 utils.apiGet(config, 'orgs', {}, function(error, body) {
                     if (error) return utils.log(error);
-                    body = JSON.parse(body);
+                    
                     if (!body || (body.length && body.length < 2)) return utils.log('Your login ' + config.email + ' doesn\'t belong to other accounts. Ensure the other owner has added your email.');
 
                     for (var i = 0; i < body.length; i++) {
@@ -402,12 +402,20 @@ checkElevated()
                         '. levels: ' + (options.levels || (options.debug ? 'all' : '-debug')) +
                         '. tags: ' + (options.tags || 'all') +
                         '. query: ' + (query || 'none'));
+                    
+                    
+                    let lines = [];
+                    if (body && Array.isArray(body)) {
+                        lines = body;
+                    } else if (body && body._ts) {
+                        lines = [body];
+                    }
 
-                    if (!(body && body.length)) return utils.log('Query returned no lines.');
+                    if (!lines.length) return utils.log('Query returned no lines.');
 
-                    var last_timestamp = new Date(body[0]._ts);
+                    var last_timestamp = new Date(lines[0]._ts);
 
-                    body.forEach((line) => {
+                    lines.forEach((line) => {
                         t = new Date(line._ts);
                         if (options.preferHead && last_timestamp < t) {
                             last_timestamp = t;
