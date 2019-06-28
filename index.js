@@ -262,14 +262,11 @@ checkElevated()
                     const payload = data.p;
 
                     if (account === 'meta') return; // Ignore meta messages
-
-                    if (Array.isArray(payload)) {
-                        payload.forEach(line => {
-                            utils.renderLine(config, line, params)
-                        });
-                    } else {
-                        utils.renderLine(config, payload, params);
-                    }
+                    
+                    const lines = [].concat(payload);
+                    lines.forEach((line) => {
+                        utils.renderLine(config, line, params)
+                    });
                 });
 
                 ws.on('error', function(err) {
@@ -404,16 +401,12 @@ checkElevated()
                         '. query: ' + (query || 'none'));
                     
                     
-                    let lines = [];
-                    if (body && Array.isArray(body)) {
-                        lines = body;
-                    } else if (body && body._ts) {
-                        lines = [body];
+                    const lines = [].concat(body);
+                    if (!lines.length) {
+                        return utils.log('Query returned no lines.');
                     }
 
-                    if (!lines.length) return utils.log('Query returned no lines.');
-
-                    var last_timestamp = new Date(lines[0]._ts);
+                    let last_timestamp = new Date(lines[0]._ts);
 
                     lines.forEach((line) => {
                         t = new Date(line._ts);
@@ -422,7 +415,6 @@ checkElevated()
                         } else if (last_timestamp > t) {
                             last_timestamp = t;
                         }
-
                         utils.renderLine(config, line, params);
                     });
 
