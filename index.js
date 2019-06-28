@@ -288,27 +288,33 @@ checkElevated()
         program.command('switch')
             .description('Switch between multiple accounts if your login has access to more than one')
             .action(function(options) {
-                utils.apiGet(config, 'orgs', {}, function(error, body) {
-                    if (error) return utils.log(error);
-                    
-                    if (!body || (body.length && body.length < 2)) return utils.log('Your login ' + config.email + ' doesn\'t belong to other accounts. Ensure the other owner has added your email.');
-
-                    for (var i = 0; i < body.length; i++) {
-                        utils.log((i + 1) + ': ' + body[i].name + (body[i].id === config.account ? ' (active)' : ''));
+                utils.apiGet(config, 'orgs', {}, function(error, response) {
+                    if (error) {
+                        return utils.log(error);
                     }
+                    
+                    if (!response || response.length <= 1) {
+                        return utils.log(`Your login ${config.email} doesn't belong to other accounts. Ensure the other owner has added your email.`);
+                    }
+                    
+                    response.forEach((org, i) => {
+                        const option = i + 1;
+                        const isActive = org.id === config.account;
+                        utils.log(`${option}: ${org.name} ${isActive ? '(active)' : ''}`)
+                    });
 
-                    input.required('Choose account [1-' + body.length + ']: ', function(selection) {
+                    input.required('Choose account [1-' + response.length + ']: ', function(selection) {
                         input.done();
                         selection = parseInt(selection);
                         selection = selection - 1;
 
-                        if (selection >= body.length || selection < 0) return utils.log('Not a valid number.');
+                        if (selection >= response.length || selection < 0) return utils.log('Not a valid number.');
 
-                        config.account = body[selection].id;
-                        config.servicekey = body[selection].servicekeys[0];
+                        config.account = response[selection].id;
+                        config.servicekey = response[selection].servicekeys[0];
                         utils.saveConfig(config, function(error, success) {
                             if (error) return utils.log(error);
-                            utils.log('Successfully switched account to ' + body[selection].name);
+                            utils.log('Successfully switched account to ' + response[selection].name);
                         });
                     });
                 });
