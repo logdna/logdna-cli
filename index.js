@@ -110,12 +110,14 @@ checkElevated()
 
                                     utils.saveConfig(config, function(error, success) {
                                         if (error) return utils.log(error);
-                                        utils.log('Thank you for signing up! Your Ingestion Key is: ' + body.key + '. Saving credentials to local config.');
+                                        utils.log();
+                                        utils.log('Thank you for signing up! Saving credentials to local config...');
+                                        utils.log('Your Ingestion Key is: ' + body.key + '. ');
                                         utils.log();
                                         utils.log('Next steps:');
                                         utils.log('===========');
-                                        utils.log('1) We\'ve sent you a welcome email to create your password. Once set, come back here and use \'logdna login\'');
-                                        utils.log('2) Type \'logdna install\' for more info on collecting your logs via our agent, syslog, Heroku, API, etc.');
+                                        utils.log('1. We\'ve sent you a welcome email to create your password. Once set, come back here and use \'logdna login\'');
+                                        utils.log('2. Visit https://docs.logdna.com/docs/ingestion-methods for more info on collecting your logs via our Agent, Syslog, Heroku, API, or code libraries.');
                                         return utils.log();
                                     });
                                 });
@@ -250,15 +252,21 @@ checkElevated()
                 });
 
                 ws.on('message', function(data) {
-                    if (data.substring(0, 1) === '{') {
+                    try {
                         data = JSON.parse(data);
-                    } else {
-                        return utils.log('Malformed line: ' + data);
+                    } catch (err) {
+                        return utils.log('Malformed line: ' + err);
                     }
 
-                    if (Array.isArray(data.p)) {
-                        data.p.forEach(line => utils.renderLine(config, line, params));
-                    } else utils.renderLine(config, data.p, params);
+                    const account = data.e;
+                    const payload = data.p;
+
+                    if (account === 'meta') return; // Ignore meta messages
+                    
+                    const lines = [].concat(payload);
+                    lines.forEach((line) => {
+                        utils.renderLine(config, line, params)
+                    });
                 });
 
                 ws.on('error', function(err) {
@@ -280,27 +288,33 @@ checkElevated()
         program.command('switch')
             .description('Switch between multiple accounts if your login has access to more than one')
             .action(function(options) {
-                utils.apiGet(config, 'orgs', {}, function(error, body) {
-                    if (error) return utils.log(error);
-                    body = JSON.parse(body);
-                    if (!body || (body.length && body.length < 2)) return utils.log('Your login ' + config.email + ' doesn\'t belong to other accounts. Ensure the other owner has added your email.');
-
-                    for (var i = 0; i < body.length; i++) {
-                        utils.log((i + 1) + ': ' + body[i].name + (body[i].id === config.account ? ' (active)' : ''));
+                utils.apiGet(config, 'orgs', {}, function(error, response) {
+                    if (error) {
+                        return utils.log(error);
                     }
+                    
+                    if (!response || response.length <= 1) {
+                        return utils.log(`Your login ${config.email} doesn't belong to other accounts. Ensure the other owner has added your email.`);
+                    }
+                    
+                    response.forEach((org, i) => {
+                        const option = i + 1;
+                        const isActive = org.id === config.account;
+                        utils.log(`${option}: ${org.name} ${isActive ? '(active)' : ''}`)
+                    });
 
-                    input.required('Choose account [1-' + body.length + ']: ', function(selection) {
+                    input.required('Choose account [1-' + response.length + ']: ', function(selection) {
                         input.done();
                         selection = parseInt(selection);
                         selection = selection - 1;
 
-                        if (selection >= body.length || selection < 0) return utils.log('Not a valid number.');
+                        if (selection >= response.length || selection < 0) return utils.log('Not a valid number.');
 
-                        config.account = body[selection].id;
-                        config.servicekey = body[selection].servicekeys[0];
+                        config.account = response[selection].id;
+                        config.servicekey = response[selection].servicekeys[0];
                         utils.saveConfig(config, function(error, success) {
                             if (error) return utils.log(error);
-                            utils.log('Successfully switched account to ' + body[selection].name);
+                            utils.log('Successfully switched account to ' + response[selection].name);
                         });
                     });
                 });
@@ -391,19 +405,22 @@ checkElevated()
                         '. levels: ' + (options.levels || (options.debug ? 'all' : '-debug')) +
                         '. tags: ' + (options.tags || 'all') +
                         '. query: ' + (query || 'none'));
+                    
+                    
+                    const lines = [].concat(body);
+                    if (!lines.length) {
+                        return utils.log('Query returned no lines.');
+                    }
 
-                    if (!(body && body.length)) return utils.log('Query returned no lines.');
+                    let last_timestamp = new Date(lines[0]._ts);
 
-                    var last_timestamp = new Date(body[0]._ts);
-
-                    body.forEach((line) => {
+                    lines.forEach((line) => {
                         t = new Date(line._ts);
                         if (options.preferHead && last_timestamp < t) {
                             last_timestamp = t;
                         } else if (last_timestamp > t) {
                             last_timestamp = t;
                         }
-
                         utils.renderLine(config, line, params);
                     });
 
