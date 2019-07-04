@@ -71,6 +71,7 @@ checkElevated()
         });
 
         program.command('register [email]')
+            .description('Register a new LogDNA account')
             .action(function(email) {
                 var nextstep = function(email) {
                     email = email.toLowerCase();
