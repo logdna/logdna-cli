@@ -303,8 +303,10 @@ checkElevated()
                         input.done();
                         selection = parseInt(selection);
                         selection = selection - 1;
-
-                        if (selection >= response.length || selection < 0) return utils.log('Not a valid number.');
+                        
+                        if (isNaN(selection) || selection >= response.length || selection < 0) {
+                            return utils.log('Not a valid number.');
+                        }
 
                         config.account = response[selection].id;
                         config.servicekey = response[selection].servicekeys[0];
@@ -317,7 +319,7 @@ checkElevated()
             });
 
         program.command('search [query]')
-            .description('Limited search functionality with optional filtering (beta). See \'logdna search --help\'')
+            .description('Basic search with optional filtering. Run logdna search --help for options.')
             .option('-h, --hosts <hosts>', 'Filter on hosts (separate by comma)')
             .option('-a, --apps <apps>', 'Filter on apps (separate by comma)')
             .option('-l, --levels <levels>', 'Filter on levels (separate by comma)')
@@ -327,7 +329,7 @@ checkElevated()
             .option('--next', 'Get next chunk of lines (after last search). This is a convenience wrapper around the --from and --to parameters.')
             .option('--from <from>', 'Unix timestamp of beginning of search timeframe.')
             .option('--to <to>', 'Unix timestamp of end of search timeframe.')
-            .option('-j, --json', 'if true, output raw json', false)
+            .option('-j, --json', 'Output raw JSON', false)
             .action(function(query, options) {
                 var params = {
                     q: query || ''

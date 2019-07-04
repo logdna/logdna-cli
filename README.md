@@ -147,6 +147,13 @@ $ logdna search "logdna" --from 1541100040931 --to 1541102940000
 # Other
 $ logdna info
 $ logdna update
+
+# Switch organization
+$ logdna switch
+
+> 1: ACME (active)
+> 2: Strickland Propane
+> Choose account [1-2]:
 ```
 
 ## Contributing
