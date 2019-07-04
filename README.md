@@ -121,7 +121,7 @@ This will output the `pkg` file to the root of the repo. Signing will likely fai
 | `logdna login [email]` | Login to a LogDNA user account. |
 | `logdna tail [options] [query]` | Live tail with optional filtering. Options include `-h`, `-a`, `-l`, `-t` to filter by hosts, apps, levels or tags respectively. Run `logdna tail -h` to learn more. |
 | `logdna switch` | Switch between multiple accounts if your login has access to more than one. |
-| `logdna search [options] [query]` | Limited search functionality with optional filtering (beta). See `logdna search --help`. |
+| `logdna search [options] [query]` | Limited search functionality with optional filtering. See `logdna search --help`. |
 | `logdna info` | Show current logged in user info. |
 | `logdna update` | Update CLI to latest version. |
 
