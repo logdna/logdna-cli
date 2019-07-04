@@ -116,14 +116,14 @@ This will output the `pkg` file to the root of the repo. Signing will likely fai
 
 | Command | Description |
 | - | - |
-| `logdna register [email] [key]` | Register a new LogDNA account. `[key]` is optional and will autogenerate. |
-| `logdna ssologin` | Login to a LogDNA user account via single sign-on. |
-| `logdna login [email]` | Login to a LogDNA user account. |
-| `logdna tail [options] [query]` | Live tail with optional filtering. Options include `-h`, `-a`, `-l`, `-t` to filter by hosts, apps, levels or tags respectively. Run `logdna tail -h` to learn more. |
-| `logdna switch` | Switch between multiple accounts if your login has access to more than one. |
-| `logdna search [options] [query]` | Limited search functionality with optional filtering. See `logdna search --help`. |
-| `logdna info` | Show current logged in user info. |
-| `logdna update` | Update CLI to latest version. |
+| `logdna register [email]` | Register a new LogDNA account |
+| `logdna ssologin` | Log in to a LogDNA via single sign-on |
+| `logdna login [email]` | Log in to LogDNA |
+| `logdna tail [options] [query]` | Live tail with optional filtering. Options include `-h`, `-a`, `-l`, `-t` to filter by hosts, apps, levels or tags respectively. Run `logdna tail --help` to learn more. |
+| `logdna switch` | If your login has access to more than one account, this command allows you to switch between them |
+| `logdna search [options] [query]` | Basic search with optional filtering. Run `logdna search --help` for options. |
+| `logdna info` | Show current logged in user info |
+| `logdna update` | Update the CLI to the latest version |
 
 ### Examples
 

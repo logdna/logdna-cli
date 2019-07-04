@@ -20,13 +20,12 @@ process.title = 'logdna';
 program._name = 'logdna';
 program
     .version(pkg.version, '-v, --version')
-    .usage('[commands] [options]\n\n  This CLI duplicates useful functionality of the LogDNA web app.')
-    // .description('This CLI duplicates useful functionality of the LogDNA web app.')
+    .usage('[commands] [options]\n\nThe LogDNA CLI allows you to signup for a new account and tail your servers right from the command line.')
     .on('--help', function() {
         utils.log('  Examples:');
         utils.log();
         utils.log('    $ logdna register user@example.com');
-        utils.log('    $ logdna register user@example.com b7c0487cfa5fa7327c9a166c6418598d    # use this if you were assigned an Ingestion Key');
+        utils.log('    $ logdna register user@example.com b7c0487cfa5fa7327c9a166c6418598d # use this if you were assigned an Ingestion Key');
         utils.log('    $ logdna tail \'("timed out" OR "connection refused") -request\'');
         utils.log('    $ logdna tail -a access.log 500');
         utils.log('    $ logdna tail -l error,warn');
@@ -71,9 +70,8 @@ checkElevated()
             if (error) utils.log(error);
         });
 
-        program.command('register [email] [key]')
-            .description('Register a new LogDNA account. [key] is optional and will autogenerate')
-            .action(function(email, key) {
+        program.command('register [email]')
+            .action(function(email) {
                 var nextstep = function(email) {
                     email = email.toLowerCase();
 
@@ -83,12 +81,9 @@ checkElevated()
                         input.required('Last name: ', function(lastname) {
                             input.required('Company/Organization: ', function(company) {
                                 input.done();
-
-                                key = (key || '').toLowerCase();
                                 utils.apiPost(config, 'register', {
                                     auth: false
                                     , email: email
-                                    , key: key
                                     , firstname: firstname
                                     , lastname: lastname
                                     , company: company
@@ -136,7 +131,7 @@ checkElevated()
             });
 
         program.command('ssologin')
-            .description('Login to a LogDNA user account via Single Signon')
+            .description('Log in to a LogDNA via single sign-on')
             .action(function() {
                 var token = Math.floor((Math.random() * 4000000000) + 800000000).toString(16);
                 var pollTimeout;
@@ -176,7 +171,7 @@ checkElevated()
             });
 
         program.command('login [email]')
-            .description('Login to a LogDNA user account')
+            .description('Log in to LogDNA')
             .action(function(email) {
                 var nextstep = function(email) {
                     input.hidden('Password: ', function(password) {
@@ -219,12 +214,12 @@ checkElevated()
             });
 
         program.command('tail [query]')
-            .description('Live tail with optional filtering. See \'logdna tail --help\'')
+            .description(`Live tail with optional filtering. Options include -h, -a, -l, -t to filter by hosts, apps, levels or tags respectively. Run logdna tail --help to learn more.`)
             .option('-h, --hosts <hosts>', 'Filter on hosts (separate by comma)')
             .option('-a, --apps <apps>', 'Filter on apps (separate by comma)')
             .option('-l, --levels <levels>', 'Filter on levels (separate by comma)')
             .option('-t, --tags <tags>', 'Filter on tags (separate by comma)')
-            .option('-j, --json', 'if true, output raw json', false)
+            .option('-j, --json', 'Output raw JSON', false)
             .action(function(query, options) {
                 var params = utils.authParams(config);
                 params.q = query || '';
@@ -286,7 +281,7 @@ checkElevated()
             });
 
         program.command('switch')
-            .description('Switch between multiple accounts if your login has access to more than one')
+            .description('If your login has access to more than one account, this command allows you to switch between them')
             .action(function(options) {
                 utils.apiGet(config, 'orgs', {}, function(error, response) {
                     if (error) {
@@ -442,7 +437,7 @@ checkElevated()
             });
 
         program.command('update')
-            .description('Update CLI to latest version')
+            .description('Update the CLI to the latest version')
             .action(function() {
                 utils.performUpgrade(config, true, function() {
                     utils.log('No update available. You have the latest version: ' + pkg.version);
