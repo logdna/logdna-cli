@@ -20,7 +20,7 @@ process.title = 'logdna';
 program._name = 'logdna';
 program
     .version(pkg.version, '-v, --version')
-    .usage('[commands] [options]\n\nThe LogDNA CLI allows you to signup for a new account and tail your servers right from the command line.')
+    .usage('[commands] [options]\n\nThe LogDNA CLI allows you to sign up for a new account and tail your logs right from the command line.')
     .on('--help', function() {
         utils.log('  Examples:');
         utils.log();
