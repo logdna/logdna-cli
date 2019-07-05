@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /* globals process */
 const program = require('commander');
+const properties = require('properties');
 const qs = require('querystring');
 const os = require('os');
 
