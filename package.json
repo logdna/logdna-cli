@@ -20,13 +20,10 @@
   },
   "homepage": "https://github.com/logdna/logdna-cli",
   "dependencies": {
-    "bluebird": "^3.5.5",
-    "bufferutil": "^4.0.1",
     "commander": "^2.20.0",
     "properties": "^1.2.1",
     "request": "^2.88.0",
     "semver": "^6.1.2",
-    "utf-8-validate": "^5.0.2",
     "ws": "^7.0.1"
   },
   "devDependencies": {

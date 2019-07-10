@@ -46,11 +46,11 @@ cd logdna-cli
 npm install
 
 # help
-sudo node index.js --help
+node index.js --help
 
 # login using one of commands below
-sudo node index.js login
-sudo node index.js ssologin
+node index.js login
+node index.js ssologin
 ```
 
 ## Building Binaries
