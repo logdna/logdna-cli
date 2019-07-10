@@ -116,7 +116,7 @@ This will output the `pkg` file to the root of the repo. Signing will likely fai
 
 | Command | Description |
 | - | - |
-| `logdna isister [email]` | Register a new LogDNA account |
+| `logdna register [email]` | Register a new LogDNA account |
 | `logdna ssologin` | Log in to a LogDNA via single sign-on |
 | `logdna login [email]` | Log in to LogDNA |
 | `logdna tail [options] [query]` | Live tail with optional filtering. Options include `-h`, `-a`, `-l`, `-t` to filter by hosts, apps, levels or tags respectively. Run `logdna tail --help` to learn more. |
