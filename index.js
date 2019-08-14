@@ -3,7 +3,6 @@
 const program = require('commander');
 const properties = require('properties');
 const qs = require('querystring');
-const os = require('os');
 
 const pkg = require('./package.json');
 const WebSocket = require('./lib/logdna-websocket');
@@ -189,7 +188,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
         });
 
     program.command('tail [query]')
-        .description(`Live tail with optional filtering. Options include -h, -a, -l, -t to filter by hosts, apps, levels or tags respectively. Run logdna tail --help to learn more.`)
+        .description('Live tail with optional filtering. Options include -h, -a, -l, -t to filter by hosts, apps, levels or tags respectively. Run logdna tail --help to learn more.')
         .option('-h, --hosts <hosts>', 'Filter on hosts (separate by comma)')
         .option('-a, --apps <apps>', 'Filter on apps (separate by comma)')
         .option('-l, --levels <levels>', 'Filter on levels (separate by comma)')
@@ -213,7 +212,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                 utils.log('tail started. hosts: ' + (options.hosts || 'all') +
                     '. apps: ' + (options.apps || 'all') +
                     '. tags: ' + (options.tags || 'all') +
-                    '. levels: ' + (options.levels || (options.debug ? 'all' : '-debug')) +
+                    '. levels: ' + (options.levels || 'all') +
                     '. query: ' + (query || 'none'));
             });
 
@@ -232,10 +231,10 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                 const payload = data.p;
 
                 if (account === 'meta') return; // Ignore meta messages
-                
+
                 const lines = [].concat(payload);
                 lines.forEach((line) => {
-                    utils.renderLine(config, line, params)
+                    utils.renderLine(config, line, params);
                 });
             });
 
@@ -243,7 +242,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                 err = err.toString();
                 if (err.indexOf('401') > -1) {
                     // invalid token
-                    utils.log('Access token invalid. If you created or changed your password recently, please \'logdna login\' again. Type \'logdna --help\' for more info.');
+                    utils.log('Access token invalid. If you created or changed your password recently, please \'logdna login\' or \'logdna ssologin\' again. Type \'logdna --help\' for more info.');
                     return process.exit();
                 }
 
@@ -262,22 +261,22 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                 if (error) {
                     return utils.log(error);
                 }
-                
+
                 if (!response || response.length <= 1) {
                     return utils.log(`Your login ${config.email} doesn't belong to other accounts. Ensure the other owner has added your email.`);
                 }
-                
+
                 response.forEach((org, i) => {
                     const option = i + 1;
                     const isActive = org.id === config.account;
-                    utils.log(`${option}: ${org.name} ${isActive ? '(active)' : ''}`)
+                    utils.log(`${option}: ${org.name} ${isActive ? '(active)' : ''}`);
                 });
 
                 input.required('Choose account [1-' + response.length + ']: ', function(selection) {
                     input.done();
                     selection = parseInt(selection);
                     selection = selection - 1;
-                    
+
                     if (isNaN(selection) || selection >= response.length || selection < 0) {
                         return utils.log('Not a valid number.');
                     }
@@ -374,11 +373,11 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                 utils.log('search finished: ' + (body ? body.length : 0) + ' line(s)' + (range || '') +
                     '. hosts: ' + (options.hosts || 'all') +
                     '. apps: ' + (options.apps || 'all') +
-                    '. levels: ' + (options.levels || (options.debug ? 'all' : '-debug')) +
+                    '. levels: ' + (options.levels || 'all') +
                     '. tags: ' + (options.tags || 'all') +
                     '. query: ' + (query || 'none'));
-                
-                
+
+
                 const lines = [].concat(body);
                 if (!lines.length) {
                     return utils.log('Query returned no lines.');
@@ -433,11 +432,3 @@ process.on('uncaughtException', function(err) {
     utils.log('Uncaught Error: ' + (err.stack || '').split('\r\n'));
     utils.log('------------------------------------------------------------------');
 });
-
-process.once('SIGTERM', function() {
-    utils.log('Got SIGTERM signal, shutting down...');
-}); // kill
-
-process.once('SIGINT', function() {
-    utils.log('Got SIGINT signal, shutting down...');
-}); // ctrl+c
