@@ -34,8 +34,8 @@ program
     });
 
 properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) => {
-    if (err) {
-        return utils.log('Unable to read the configuration file.');
+    if (err && err.code !== 'ENOENT') {
+        return utils.log('Unable to read the configuration file: ' + err.code);
     }
     config = Object.assign(config, parsedConfig || {});
 
