@@ -209,7 +209,8 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
             var ws = new WebSocket((config.LOGDNA_APISSL ? 'https://' : 'http://') + config.LOGDNA_TAILHOST + '/ws/tail?' + qs.stringify(params));
 
             ws.on('open', function open() {
-                utils.log('tail started. hosts: ' + (options.hosts || 'all') +
+                // Informational output for tail written to stderr to not interfere with actual data
+                console.error('tail started. hosts: ' + (options.hosts || 'all') +
                     '. apps: ' + (options.apps || 'all') +
                     '. tags: ' + (options.tags || 'all') +
                     '. levels: ' + (options.levels || 'all') +
@@ -217,14 +218,14 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
             });
 
             ws.on('reconnecting', function(num) {
-                utils.log('tail reconnect attmpt #' + num + '...');
+                console.error('tail reconnect attmpt #' + num + '...');
             });
 
             ws.on('message', function(data) {
                 try {
                     data = JSON.parse(data);
                 } catch (err) {
-                    return utils.log('Malformed line: ' + err);
+                    return console.error('Malformed line: ' + err);
                 }
 
                 const account = data.e;
@@ -242,15 +243,14 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                 err = err.toString();
                 if (err.indexOf('401') > -1) {
                     // invalid token
-                    utils.log('Access token invalid. If you created or changed your password recently, please \'logdna login\' or \'logdna ssologin\' again. Type \'logdna --help\' for more info.');
+                    console.error('Access token invalid. If you created or changed your password recently, please \'logdna login\' or \'logdna ssologin\' again. Type \'logdna --help\' for more info.');
                     return process.exit();
                 }
-
-                utils.log('Error: ' + err);
+                console.error('Error: ' + err);
             });
 
             ws.on('close', function() {
-                utils.log('tail lost connection');
+                console.error('tail lost connection');
             });
         });
 
@@ -369,8 +369,8 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                         }
                     }).filter(element => element);
                 }
-
-                utils.log('search finished: ' + (body ? body.length : 0) + ' line(s)' + (range || '') +
+                // Informational output for search written to stderr to not interfere with actual data
+                console.error('search finished: ' + (body ? body.length : 0) + ' line(s)' + (range || '') +
                     '. hosts: ' + (options.hosts || 'all') +
                     '. apps: ' + (options.apps || 'all') +
                     '. levels: ' + (options.levels || 'all') +
@@ -380,7 +380,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
 
                 const lines = [].concat(body);
                 if (!lines.length) {
-                    return utils.log('Query returned no lines.');
+                    return console.error('Query returned no lines.');
                 }
 
                 let last_timestamp = new Date(lines[0]._ts);
@@ -397,7 +397,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
 
                 config.last_timestamp = last_timestamp.toJSON();
                 utils.saveConfig(config, function(error, success) {
-                    if (error) return utils.log(error);
+                    if (error) return console.error(error);
                 });
             });
         });
