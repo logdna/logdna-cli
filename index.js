@@ -210,7 +210,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
 
             ws.on('open', function open() {
                 // Informational output for tail written to stderr to not interfere with actual data
-                console.error('tail started. hosts: ' + (options.hosts || 'all') +
+                utils.error('tail started. hosts: ' + (options.hosts || 'all') +
                     '. apps: ' + (options.apps || 'all') +
                     '. tags: ' + (options.tags || 'all') +
                     '. levels: ' + (options.levels || 'all') +
@@ -218,14 +218,14 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
             });
 
             ws.on('reconnecting', function(num) {
-                console.error('tail reconnect attmpt #' + num + '...');
+                utils.error('tail reconnect attmpt #' + num + '...');
             });
 
             ws.on('message', function(data) {
                 try {
                     data = JSON.parse(data);
                 } catch (err) {
-                    return console.error('Malformed line: ' + err);
+                    return utils.error('Malformed line: ' + err);
                 }
 
                 const account = data.e;
@@ -243,14 +243,14 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                 err = err.toString();
                 if (err.indexOf('401') > -1) {
                     // invalid token
-                    console.error('Access token invalid. If you created or changed your password recently, please \'logdna login\' or \'logdna ssologin\' again. Type \'logdna --help\' for more info.');
+                    utils.error('Access token invalid. If you created or changed your password recently, please \'logdna login\' or \'logdna ssologin\' again. Type \'logdna --help\' for more info.');
                     return process.exit();
                 }
-                console.error('Error: ' + err);
+                utils.error('Error: ' + err);
             });
 
             ws.on('close', function() {
-                console.error('tail lost connection');
+                utils.error('tail lost connection');
             });
         });
 
@@ -352,7 +352,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
             var t, t2, range;
 
             utils.apiGet(modifiedconfig, 'v1/export', params, function(error, body) {
-                if (error) return utils.log(error);
+                if (error) return utils.error(error);
                 if (body && body.range && body.range.from && body.range.to) {
                     t = new Date(body.range.from);
                     t2 = new Date(body.range.to);
@@ -370,7 +370,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                     }).filter(element => element);
                 }
                 // Informational output for search written to stderr to not interfere with actual data
-                console.error('search finished: ' + (body ? body.length : 0) + ' line(s)' + (range || '') +
+                utils.error('search finished: ' + (body ? body.length : 0) + ' line(s)' + (range || '') +
                     '. hosts: ' + (options.hosts || 'all') +
                     '. apps: ' + (options.apps || 'all') +
                     '. levels: ' + (options.levels || 'all') +
@@ -380,7 +380,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
 
                 const lines = [].concat(body);
                 if (!lines.length) {
-                    return console.error('Query returned no lines.');
+                    return utils.error('Query returned no lines.');
                 }
 
                 let last_timestamp = new Date(lines[0]._ts);
@@ -397,7 +397,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
 
                 config.last_timestamp = last_timestamp.toJSON();
                 utils.saveConfig(config, function(error, success) {
-                    if (error) return console.error(error);
+                    if (error) return utils.error(error);
                 });
             });
         });
