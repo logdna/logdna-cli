@@ -210,22 +210,22 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
 
             ws.on('open', function open() {
                 // Informational output for tail written to stderr to not interfere with actual data
-                utils.error('tail started. hosts: ' + (options.hosts || 'all') +
+                utils.log('tail started. hosts: ' + (options.hosts || 'all') +
                     '. apps: ' + (options.apps || 'all') +
                     '. tags: ' + (options.tags || 'all') +
                     '. levels: ' + (options.levels || 'all') +
-                    '. query: ' + (query || 'none'));
+                    '. query: ' + (query || 'none'), null, 'error');
             });
 
             ws.on('reconnecting', function(num) {
-                utils.error('tail reconnect attmpt #' + num + '...');
+                utils.log('tail reconnect attmpt #' + num + '...', null, 'error');
             });
 
             ws.on('message', function(data) {
                 try {
                     data = JSON.parse(data);
                 } catch (err) {
-                    return utils.error('Malformed line: ' + err);
+                    return utils.log('Malformed line: ' + err, null, 'error');
                 }
 
                 const account = data.e;
@@ -243,14 +243,14 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                 err = err.toString();
                 if (err.indexOf('401') > -1) {
                     // invalid token
-                    utils.error('Access token invalid. If you created or changed your password recently, please \'logdna login\' or \'logdna ssologin\' again. Type \'logdna --help\' for more info.');
+                    utils.log('Access token invalid. If you created or changed your password recently, please \'logdna login\' or \'logdna ssologin\' again. Type \'logdna --help\' for more info.', null, 'error');
                     return process.exit();
                 }
-                utils.error('Error: ' + err);
+                utils.log('Error: ' + err, null, 'error');
             });
 
             ws.on('close', function() {
-                utils.error('tail lost connection');
+                utils.log('tail lost connection', null, 'error');
             });
         });
 
@@ -352,7 +352,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
             var t, t2, range;
 
             utils.apiGet(modifiedconfig, 'v1/export', params, function(error, body) {
-                if (error) return utils.error(error);
+                if (error) return utils.log(error, null, 'error');
                 if (body && body.range && body.range.from && body.range.to) {
                     t = new Date(body.range.from);
                     t2 = new Date(body.range.to);
@@ -370,17 +370,17 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                     }).filter(element => element);
                 }
                 // Informational output for search written to stderr to not interfere with actual data
-                utils.error('search finished: ' + (body ? body.length : 0) + ' line(s)' + (range || '') +
+                utils.log('search finished: ' + (body ? body.length : 0) + ' line(s)' + (range || '') +
                     '. hosts: ' + (options.hosts || 'all') +
                     '. apps: ' + (options.apps || 'all') +
                     '. levels: ' + (options.levels || 'all') +
                     '. tags: ' + (options.tags || 'all') +
-                    '. query: ' + (query || 'none'));
+                    '. query: ' + (query || 'none'), null, 'error');
 
 
                 const lines = [].concat(body);
                 if (!lines.length) {
-                    return utils.error('Query returned no lines.');
+                    return utils.log('Query returned no lines.', null, 'error');
                 }
 
                 let last_timestamp = new Date(lines[0]._ts);
@@ -397,7 +397,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
 
                 config.last_timestamp = last_timestamp.toJSON();
                 utils.saveConfig(config, function(error, success) {
-                    if (error) return utils.error(error);
+                    if (error) return utils.log(error, null, 'error');
                 });
             });
         });
