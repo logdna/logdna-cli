@@ -1,16 +1,20 @@
 #!/usr/bin/env node
 /* globals process */
+
+// External Modules
+const qs = require('querystring');
 const program = require('commander');
 const properties = require('properties');
-const qs = require('querystring');
 
-const pkg = require('./package.json');
-const WebSocket = require('./lib/logdna-websocket');
+// Internal Modules
+let config = require('./lib/config');
 const input = require('./lib/input');
+const pkg = require('./package.json');
 const utils = require('./lib/utils');
-const EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+const WebSocket = require('./lib/logdna-websocket');
 
-var config = require('./lib/config');
+// Regular Expressions
+const EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
 
 process.title = 'logdna';
 program._name = 'logdna';
@@ -34,19 +38,14 @@ program
     });
 
 properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) => {
-    if (err && err.code !== 'ENOENT') {
-        return utils.log('Unable to read the configuration file: ' + err.code);
-    }
+    if (err && err.code !== 'ENOENT') { return utils.log('Unable to read the configuration file: ' + err.code); }
+
     config = Object.assign(config, parsedConfig || {});
-
-    utils.performUpgrade(config, error => {
-        if (error) utils.log(error);
-    });
-
+    utils.performUpgrade(config, false, (error) => { if (error) { utils.log(error); } });
     program.command('register [email]')
         .description('Register a new LogDNA account')
         .action(function(email) {
-            var nextstep = function(email) {
+            let nextstep = function(email) {
                 email = email.toLowerCase();
 
                 if (!EMAIL_REGEX.test(email)) return utils.log('Invalid email address');
@@ -107,15 +106,15 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
     program.command('ssologin')
         .description('Log in to a LogDNA via single sign-on')
         .action(function() {
-            var token = Math.floor((Math.random() * 4000000000) + 800000000).toString(16);
-            var pollTimeout;
+            let token = Math.floor((Math.random() * 4000000000) + 800000000).toString(16);
+            let pollTimeout;
 
             // Overide SSO URL if using a custom environment
-            var sso_url = config.SSO_URL;
+            let sso_url = config.SSO_URL;
             if (config.LOGDNA_APPHOST) sso_url = config.LOGDNA_APPHOST + config.SSO_LONG_PATH;
             utils.log('To sign in via SSO, use a web browser to open the page ' + sso_url + token);
 
-            var pollToken = function() {
+            let pollToken = function() {
                 utils.apiPost(config, 'sso', {
                     auth: false
                     , token: token
@@ -147,7 +146,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
     program.command('login [email]')
         .description('Log in to LogDNA')
         .action(function(email) {
-            var nextstep = function(email) {
+            let nextstep = function(email) {
                 input.hidden('Password: ', function(password) {
                     input.done();
 
@@ -195,7 +194,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
         .option('-t, --tags <tags>', 'Filter on tags (separate by comma)')
         .option('-j, --json', 'Output raw JSON', false)
         .action(function(query, options) {
-            var params = utils.authParams(config);
+            let params = utils.authParams(config);
             params.q = query || '';
 
             if (options.hosts) params.hosts = options.hosts.replace(/, /g, ',');
@@ -206,7 +205,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
 
             params.q = params.q.trim();
 
-            var ws = new WebSocket((config.LOGDNA_APISSL ? 'https://' : 'http://') + config.LOGDNA_TAILHOST + '/ws/tail?' + qs.stringify(params));
+            let ws = new WebSocket((config.LOGDNA_APISSL ? 'https://' : 'http://') + config.LOGDNA_TAILHOST + '/ws/tail?' + qs.stringify(params));
 
             ws.on('open', function open() {
                 utils.log('tail started. hosts: ' + (options.hosts || 'all') +
@@ -304,7 +303,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
         .option('--to <to>', 'Unix timestamp of end of search timeframe.')
         .option('-j, --json', 'Output raw JSON', false)
         .action(function(query, options) {
-            var params = {
+            let params = {
                 q: query || ''
             };
 
@@ -344,12 +343,12 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
             if (options.tags) params.tags = options.tags.replace(/, /g, ',');
             if (config.servicekey) params.servicekey = config.servicekey;
 
-            var modifiedconfig = JSON.parse(JSON.stringify(config));
+            let modifiedconfig = JSON.parse(JSON.stringify(config));
 
             // this prevents export API from emailing the results
             delete modifiedconfig.email;
 
-            var t, t2, range;
+            let t, t2, range;
 
             utils.apiGet(modifiedconfig, 'v1/export', params, function(error, body) {
                 if (error) return utils.log(error);
