@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Write information output to stderr for tail and seaarch [#43](https://github.com/logdna/logdna-cli/pull/43)
+- Reorganize and modify package info [#45](https://github.com/logdna/logdna-cli/pull/45)
 
 ## [v1.4.1] - 2019-08-14
 ### Changed
