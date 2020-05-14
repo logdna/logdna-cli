@@ -20,8 +20,8 @@ const fpm = {
     , license: 'MIT'
     , vendor: 'LogDNA'
     , description: {
-        linux: 'LogDNA CLI for Linux'
-        , darwin: 'LogDNA CLI for OSX'
+        linux: '\"LogDNA CLI for Linux\"'
+        , darwin: '\"LogDNA CLI for OSX\"'
     }, url: 'https://logdna.com'
     , maintainer: 'support@logdna.com'
 };
