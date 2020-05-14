@@ -46,8 +46,8 @@ module.exports = function(grunt) {
                 cmd: `nexe -i index.js -o ${execOutputPath} -ftr ${nodeVersion}`
                 , maxBuffer: 20000 * 1024
             }, fpm_debian: `fpm \
-                --source ${fpm.input_type} \
-                --target ${fpm.output_type.debian} \
+                --input-type ${fpm.input_type} \
+                --output-type ${fpm.output_type.debian} \
                 --name ${fpm.name} \
                 --version ${fpm.version} \
                 --license  ${fpm.license} \
@@ -57,8 +57,8 @@ module.exports = function(grunt) {
                 --post-install ./scripts/post-install \
                 -f --deb-no-default-config-files ${execOutputPath}=/usr/local/logdna/bin/logdna`
             , fpm_redhat: `fpm \
-                --source ${fpm.input_type} \
-                --target ${fpm.output_type.redhat} \
+                --input-type ${fpm.input_type} \
+                --output-type ${fpm.output_type.redhat} \
                 --name ${fpm.name} \
                 --version ${fpm.version} \
                 --license  ${fpm.license} \
@@ -68,8 +68,8 @@ module.exports = function(grunt) {
                 --post-install ./scripts/post-install \
                 -f ${execOutputPath}=/usr/local/logdna/bin/logdna`
             , fpm_darwin: `fpm \
-                --source ${fpm.input_type} \
-                --target ${fpm.output_type.darwin} \
+                --input-type ${fpm.input_type} \
+                --output-type ${fpm.output_type.darwin} \
                 --name ${fpm.name} \
                 --version ${fpm.version} \
                 --license  ${fpm.license} \
