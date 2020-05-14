@@ -18,7 +18,7 @@ const fpm = {
     }, name: 'logdna-cli'
     , version: pkg.version
     , license: 'MIT'
-    , vendor: 'LogDNA'
+    , vendor: '\"LogDNA, Inc.\"'
     , description: {
         linux: '\"LogDNA CLI for Linux\"'
         , darwin: '\"LogDNA CLI for OSX\"'
@@ -79,8 +79,8 @@ module.exports = function(grunt) {
                 --osxpkg-identifier-prefix com.logdna \
                 --post-install ./scripts/post-install \
                 -f ${execOutputPath}=/usr/local/logdna/bin/logdna`
-            , copy_debian: 'cp -f logdna-cli*${fpm.version}*.deb ./builds/logdna-cli.deb'
-            , copy_redhat: 'cp -f logdna-cli*${fpm.version}*.rpm ./builds/logdna-cli.rpm'
+            , copy_debian: `cp -f logdna-cli*${fpm.version}*.deb ./builds/logdna-cli.deb`
+            , copy_redhat: `cp -f logdna-cli*${fpm.version}*.rpm ./builds/logdna-cli.rpm`
             , sign_pkg: `productsign --sign "Developer ID Installer: Answerbook, Inc. (TT7664HMU3)" logdna-cli-${fpm.version}.pkg ./builds/logdna-cli.pkg`
             , verify_pkg: 'spctl --assess --type install -v ./builds/logdna-cli.pkg'
             , gzip_macbin: 'gzip -kf ./logdna'
