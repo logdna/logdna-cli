@@ -4,6 +4,7 @@ logs
 
 # vim swps
 *.swp
+.DS_Store
 
 # Runtime data
 pids
