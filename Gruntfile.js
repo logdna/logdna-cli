@@ -18,15 +18,14 @@ const fpm = {
     }, name: 'logdna-cli'
     , version: pkg.version
     , license: 'MIT'
-    , vendor: '\"LogDNA, Inc.\"'
+    , vendor: '"LogDNA, Inc."'
     , description: {
-        linux: '\"LogDNA CLI for Linux\"'
-        , darwin: '\"LogDNA CLI for OSX\"'
+        linux: '"LogDNA CLI for Linux"'
+        , darwin: '"LogDNA CLI for OSX"'
     }, url: 'https://logdna.com'
     , maintainer: 'support@logdna.com'
 };
 const nodeVersion = '12.13.0';
-const unixSystems = ['darwin', 'debian', 'redhat'];
 
 // Initializations
 require('load-grunt-tasks')(grunt);
@@ -105,9 +104,16 @@ module.exports = function(grunt) {
                     , dest: './.builds/windows/tools/'
                 }]
             }
+        }, eslint: {
+            target: files
+            , options: {
+                configFile: '.eslintrc'
+                , fix: true
+            }
         }
     });
 
+    grunt.registerTask('lint', ['eslint']);
     grunt.registerTask('build', ['lineremover', 'exec:nexe']);
     // NEW
     grunt.registerTask('debian', ['build', 'exec:fpm_debian', 'exec:copy_debian']);

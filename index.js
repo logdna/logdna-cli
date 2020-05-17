@@ -1,6 +1,3 @@
-#!/usr/bin/env node
-/* globals process */
-
 // External Modules
 const qs = require('querystring');
 const program = require('commander');
