@@ -105,16 +105,9 @@ module.exports = function(grunt) {
                     , dest: './.builds/windows/tools/'
                 }]
             }
-        }, eslint: {
-            target: files
-            , options: {
-                configFile: '.eslintrc'
-                , fix: true
-            }
         }
     });
 
-    grunt.registerTask('test', ['eslint']);
     grunt.registerTask('build', ['lineremover', 'exec:nexe']);
     // NEW
     grunt.registerTask('debian', ['build', 'exec:fpm_debian', 'exec:copy_debian']);
