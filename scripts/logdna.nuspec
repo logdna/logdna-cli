@@ -4,7 +4,7 @@
   <metadata>
     <id>logdna</id>
     <title>LogDNA CLI for Windows</title>
-    <version>1.3.0</version>
+    <version>1.4.1</version>
     <authors>sedouard,leeliu</authors>
     <owners>leeliu</owners>
     <summary>LogDNA CLI for Windows</summary>
@@ -15,11 +15,14 @@
     <docsUrl>https://github.com/logdna/logdna-cli</docsUrl>
     <bugTrackerUrl>https://github.com/logdna/logdna-cli/issues</bugTrackerUrl>
     <tags>logdna-agent logdna-cli cli tail logging devops logdna</tags>
-    <copyright>Copyright 2016 Answerbook, Inc., portions by Microsoft and Contributors</copyright>
+    <copyright>Copyright 2020 LogDNA, Inc., portions by Microsoft and Contributors</copyright>
     <licenseUrl>https://github.com/logdna/logdna-cli/blob/master/LICENSE.md</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <iconUrl>https://logdna.com/assets/images/logdna_logo.png</iconUrl>
+    <iconUrl>https://github.com/logdna/artwork/raw/master/ld-logo-square-480.png</iconUrl>
     <releaseNotes>LogDNA CLI for Windows</releaseNotes>
+    <dependencies>
+      <dependency id="nssm" version="2.24.0" />
+    </dependencies>
   </metadata>
   <files>
     <file src="tools\**" target="tools" />

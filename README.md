@@ -1,4 +1,4 @@
-# logdna-cli
+# LogDNA CLI
 
 The LogDNA CLI allows you to sign up for a new account and tail your logs right from the command line.
 
