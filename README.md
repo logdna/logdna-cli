@@ -84,7 +84,13 @@ $ logdna tail -l error,warn
 
 # Search
 $ logdna search "logdna cli" -a logdna.log -t tag1,tag2 -n 300
+# Search via UNIX timestamps
 $ logdna search "logdna" --from 1541100040931 --to 1541102940000
+# Search via Natural Language (Chrono)
+# Ensure to enclose nl strings in ""
+# Must include date reference, IE May 26, yesterday or the like
+$ logdna search "logdna" --from "yesterday at 3pm" to "today at 3:05pm"
+$ logdna search "logdna" --timeframe "May 26 at 3pm to 3:05pm"
 
 # Other
 $ logdna info
@@ -97,6 +103,18 @@ $ logdna switch
 > 2: Strickland Propane
 > Choose account [1-2]:
 ```
+
+## Developer Logs
+Logs for troubleshooting during development are included.  These will pipe to both console and [LogDNA](https://www.logdna.com/).
+
+Switch dev logs on via [/logs/config.js](logs/config.js) by setting `DEV: true`.
+
+Requires LogDNA account with environment variable LOGDNA_API_KEY set to avoid an error when `DEV: true`.
+
+Specify a log as "dev" by including `true` for the fourth parameter of utils.log.  Note that we have used a standard log format of JSON with "what", "why", "where", "who" and "when" to ensure full context is included as well as a "message" field for quick scanning in LogDNA.  See [here](index.js#L22), [here](index.js#30) and [here](index.js#L341) for example in code.
+
+Currently the coverage is limited to search's --timeframe, --from and --to code blocks.
+
 
 ## Contributing
 
