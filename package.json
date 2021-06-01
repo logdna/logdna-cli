@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/logdna/logdna-cli",
   "dependencies": {
+    "@logdna/logger": "^2.3.2",
     "chrono-node": "^2.2.6",
     "commander": "^2.20.0",
     "properties": "^1.2.1",
@@ -28,7 +29,6 @@
     "ws": "^7.0.1"
   },
   "devDependencies": {
-    "@logdna/logger": "^2.3.2",
     "grunt": "^1.0.4",
     "grunt-contrib-copy": "^1.0.0",
     "grunt-eslint": "^22.0.0",

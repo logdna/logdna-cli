@@ -91,6 +91,8 @@ $ logdna search "logdna" --from 1541100040931 --to 1541102940000
 # Must include date reference, IE May 26, yesterday or the like
 $ logdna search "logdna" --from "yesterday at 3pm" to "today at 3:05pm"
 $ logdna search "logdna" --timeframe "May 26 at 3pm to 3:05pm"
+# Search with dev logs
+$ logdna search "logdna" --timeframe "May 28 at 1pm to 3:05pm" -d
 
 # Other
 $ logdna info
@@ -107,13 +109,14 @@ $ logdna switch
 ## Developer Logs
 Logs for troubleshooting during development are included.  These will pipe to both console and [LogDNA](https://www.logdna.com/).
 
-Switch dev logs on via [/logs/config.js](logs/config.js) by setting `DEV: true`.
+Switch dev logs on via the `-d` or `--dev` flag
 
-Requires LogDNA account with environment variable LOGDNA_API_KEY set to avoid an error when `DEV: true`.
+Requires LogDNA account with environment variable LOGDNA_API_KEY see logs in LogDNA
 
-Specify a log as "dev" by including `true` for the fourth parameter of utils.log.  Note that we have used a standard log format of JSON with "what", "why", "where", "who" and "when" to ensure full context is included as well as a "message" field for quick scanning in LogDNA.  See [here](index.js#L22), [here](index.js#30) and [here](index.js#L341) for example in code.
+Specify a log as "dev" by using logger.log(...)
+Note that we have used a standard log primitive via lib/utils.js -> devLogPrim() with "what", "why", "where", "who" and "when" to ensure full context is included as well as a "message" field for quick scanning in LogDNA.  See [logger initialization](index.js#L28), [error example](index.js#91) and [devLogPrim](lib/utils.js#L232) for more details.
 
-Currently the coverage is limited to search's --timeframe, --from and --to code blocks.
+Currently the coverage is limited to index.js and more heavily in --timeframe, --from and --to.
 
 
 ## Contributing
