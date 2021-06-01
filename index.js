@@ -13,7 +13,6 @@ const input = require('./lib/input');
 const pkg = require('./package.json');
 const utils = require('./lib/utils');
 const WebSocket = require('./lib/logdna-websocket');
-const stringifier = require('properties/lib/stringifier');
 
 // Regular Expressions
 const EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
@@ -26,8 +25,8 @@ const EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-
 
 // Instantiation of the @logdna/logger object
 let logger = logdna.createLogger(
-    key = config.LOGDNA_LOGGING.API_KEY
-    , options = {
+    config.LOGDNA_LOGGING.API_KEY
+    , {
         level: config.LOGDNA_LOGGING.DEFAULT_LEVEL
         , app: config.LOGDNA_LOGGING.APP
         , hostname: config.LOGDNA_LOGGING.HOSTNAME
@@ -63,21 +62,21 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
     if (err && err.code !== 'ENOENT') { return utils.uiDisp('Unable to read the configuration file: ' + err.code); }
 
     config = Object.assign(config, parsedConfig || {});
-    utils.performUpgrade(config, false, (error) => { if (error) { utils.uiDisp(error,null,error,dev_log); } });
-    
+    utils.performUpgrade(config, false, (error) => { if (error) { utils.uiDisp(error, null, error); } });
+
     let devOption = {
         param: '-d, --dev'
         , message: 'Development logging via LogDNA'
-    }
+    };
 
     program.command('register [email]')
         .description('Register a new LogDNA account')
-        .option(devOption.param,devOption.message)
+        .option(devOption.param, devOption.message)
         .action(function(email, options) {
             let nextstep = function(email) {
                 email = email.toLowerCase();
 
-                let tmpLogWhat = 'LogDNA account registration'
+                let tmpLogWhat = 'LogDNA account registration';
 
                 if (!EMAIL_REGEX.test(email)) {
                     let tmpDevLogWhy = 'regex failed to validate';
@@ -87,10 +86,10 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                         , what: tmpLogWhat
                         , why: tmpDevLogWhy
                     });
-                    if (options.dev){
-                        logger.log(errLog,'ERROR'); // Send to LogDNA
+                    if (options.dev) {
+                        logger.log(errLog, 'ERROR'); // Send to LogDNA
                     }
-                    
+
                     console.error(errLog); // Display in console too
                     return process.exit(1); // Hard fail
                 }
@@ -106,22 +105,21 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                                 , lastname: lastname
                                 , company: company
                             }, function(error, body) {
-                                devLog.what = 'Account and Organization details';
                                 if (error) {
-                                    let tmpErrLogWhy = 'registration via API'
-                                    let tmpErrLogMessage = `ERROR: register new - account and organization details`;
-                                    let tmpErrLogData = {'message':error.message,'code':error.code,'stack':error.stack};
+                                    let tmpErrLogWhy = 'registration via API';
+                                    let tmpErrLogMessage = 'ERROR: register new - account and organization details';
+                                    let tmpErrLogData = {message:error.message, code:error.code, stack:error.stack};
                                     let errLog = utils.devLogPrim({
-                                       message: tmpErrLogMessage
-                                       , what: tmpLogWhat
-                                       , why: tmpErrLogWhy 
-                                       , additional: {errData: tmpErrLogData}
+                                        message: tmpErrLogMessage
+                                        , what: tmpLogWhat + ' - account/org details'
+                                        , why: tmpErrLogWhy
+                                        , additional: {errData: tmpErrLogData}
                                     });
 
-                                    if (options.dev){
-                                        logger.log(errLog,'ERROR'); // Send to LogDNA
+                                    if (options.dev) {
+                                        logger.log(errLog, 'ERROR'); // Send to LogDNA
                                     }
-                                    
+
                                     console.error(errLog); // Send to terminal too
                                     return process.exit(1); // Hard fail
                                 }
@@ -141,21 +139,18 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
 
                                 utils.saveConfig(config, function(error, success) {
                                     if (error) {
-                                        let tmpErrLogWhat = 'saving configuration';
-                                        let tmpErrLogWhy = 'registration via API';
-                                        let tmpErrLogMessage = `ERROR: saving configuration - ${error.message}`;
-                                        let tmpErrLogData = {'message':error.message,'code':error.code,'stack':error.stack};
+                                        let tmpErrLogWhy = 'saving configuration';
                                         let errLog = utils.devLogPrim({
-                                            message: tmpErrLogMessage
-                                            , what: tmpErrLogWhat
-                                            , why: tmpErrLogWhy 
-                                            , additional: {errData:tmpErrLogData}
+                                            message: `ERROR: ${tmpErrLogWhy} - ${error.message}`
+                                            , what: tmpLogWhat
+                                            , why: tmpErrLogWhy
+                                            , additional: {errData:{message:error.message, code:error.code, stack:error.stack}}
                                         });
-                                        
-                                        if (options.dev){
-                                            logger.log(errLog,'ERROR'); // Send to LogDNA
+
+                                        if (options.dev) {
+                                            logger.log(errLog, 'ERROR'); // Send to LogDNA
                                         }
-                                        
+
                                         console.error(errLog); // Send to terminal too
                                         return process.exit(1); // Hard fail
                                     }
@@ -186,8 +181,8 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
 
     program.command('ssologin')
         .description('Log in to a LogDNA via single sign-on')
-        .option(devOption.param,devOption.message)
-        .action(function() {
+        .option(devOption.param, devOption.message)
+        .action(function(_, options) {
             let token = Math.floor((Math.random() * 4000000000) + 800000000).toString(16);
             let pollTimeout;
 
@@ -201,23 +196,23 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                     auth: false
                     , token: token
                 }, function(error, body) {
-                    let tmpLogWhat = 'sso login'
-                    
+                    let tmpLogWhat = 'sso login';
+
                     if (error) {
                         let tmpErrLogWhy = 'signing in via sso';
                         let tmpErrLogMessage = `ERROR: ${tmpErrLogWhy} - ${error.message}`;
-                        let tmpErrLogData = {'message':error.message,'code':error.code,'stack':error.stack};
+                        let tmpErrLogData = {message:error.message, code:error.code, stack:error.stack};
                         let errLog = utils.devLogPrim({
                             message: tmpErrLogMessage
                             , what: tmpLogWhat
-                            , why: tmpErrLogWhy 
+                            , why: tmpErrLogWhy
                             , additional: {errData:tmpErrLogData}
                         });
-                        
-                        if (options.dev){
-                            logger.log(errLog,'ERROR'); // Send to LogDNA
+
+                        if (options.dev) {
+                            logger.log(errLog, 'ERROR'); // Send to LogDNA
                         }
-                        
+
                         console.error(errLog); // Send to terminal too
                         return process.exit(1); // Hard fail
                     }
@@ -238,19 +233,17 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                     utils.saveConfig(config, function(error, success) {
                         if (error) {
                             let tmpErrLogWhy = 'saving configuration';
-                            let tmpErrLogMessage = `ERROR: saving configuration - ${error.message}`;
-                            let tmpErrLogData = {'message':error.message,'code':error.code,'stack':error.stack};
                             let errLog = utils.devLogPrim({
-                                message: tmpErrLogMessage
+                                message: `ERROR: saving configuration - ${error.message}`
                                 , what: tmpLogWhat
-                                , why: tmpErrLogWhy 
-                                , additional: {errData:tmpErrLogData}
+                                , why: tmpErrLogWhy
+                                , additional: {errData:{message:error.message, code:error.code, stack:error.stack}}
                             });
-                            
-                            if (options.dev){
-                                logger.log(errLog,'ERROR'); // Send to LogDNA
+
+                            if (options.dev) {
+                                logger.log(errLog, 'ERROR'); // Send to LogDNA
                             }
-                            
+
                             console.error(errLog); // Send to terminal too
                             return process.exit(1); // Hard fail
                         }
@@ -264,28 +257,26 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
 
     program.command('login [email]')
         .description('Log in to LogDNA')
-        .option(devOption.param,devOption.message)
-        .action(function(email) {
+        .option(devOption.param, devOption.message)
+        .action(function(email, options) {
             let nextstep = function(email) {
                 input.hidden('Password: ', function(password) {
                     input.done();
 
                     email = email.toLowerCase();
-                    
-                    devLog.what = 'LogDNA login';
+
+                    let tmpDevLogWhat = 'LogDNA login';
 
                     if (!EMAIL_REGEX.test(email)) {
-                        let tmpDevLogWhy = 'regex failed to validate';
-                        let tmpDevLogMessage = `Invalid email address of ${email}`;
                         let errLog = utils.devLogPrim({
-                            message: tmpDevLogMessage
-                            , what: tmpLogWhat
-                            , why: tmpDevLogWhy
+                            message: `Invalid email address of ${email}`
+                            , what: tmpDevLogWhat
+                            , why: 'regex failed to validate'
                         });
-                        if (options.dev){
-                            logger.log(errLog,'ERROR'); // Send to LogDNA
+                        if (options.dev) {
+                            logger.log(errLog, 'ERROR'); // Send to LogDNA
                         }
-                        
+
                         console.error(errLog); // Display in console too
                         return process.exit(1); // Hard fail
                     }
@@ -293,23 +284,23 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                     utils.apiPost(config, 'login', {
                         auth: email + ':' + password
                     }, function(error, body) {
-                        let tmpLogWhat = 'login'
-                        
+                        let tmpLogWhat = 'login';
+
                         if (error) {
                             let tmpErrLogWhy = 'signing in';
                             let tmpErrLogMessage = `ERROR: ${tmpErrLogWhy} - ${error.message}`;
-                            let tmpErrLogData = {'message':error.message,'code':error.code,'stack':error.stack};
+                            let tmpErrLogData = {message:error.message, code:error.code, stack:error.stack};
                             let errLog = utils.devLogPrim({
                                 message: tmpErrLogMessage
                                 , what: tmpLogWhat
-                                , why: tmpErrLogWhy 
+                                , why: tmpErrLogWhy
                                 , additional: {errData:tmpErrLogData}
                             });
-                            
-                            if (options.dev){
-                                logger.log(errLog,'ERROR'); // Send to LogDNA
+
+                            if (options.dev) {
+                                logger.log(errLog, 'ERROR'); // Send to LogDNA
                             }
-                            
+
                             console.error(errLog); // Send to terminal too
                             return process.exit(1); // Hard fail
                         }
@@ -327,19 +318,17 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                         utils.saveConfig(config, function(error, success) {
                             if (error) {
                                 let tmpErrLogWhy = 'saving configuration';
-                                let tmpErrLogMessage = `ERROR: ${tmpErrLogWhy} - ${error.message}`;
-                                let tmpErrLogData = {'message':error.message,'code':error.code,'stack':error.stack};
                                 let errLog = utils.devLogPrim({
-                                    message: tmpErrLogMessage
+                                    message: `ERROR: ${tmpErrLogWhy} - ${error.message}`
                                     , what: tmpLogWhat
-                                    , why: tmpErrLogWhy 
-                                    , additional: {errData:tmpErrLogData}
+                                    , why: tmpErrLogWhy
+                                    , additional: {errData:{message:error.message, code:error.code, stack:error.stack}}
                                 });
-                                
-                                if (options.dev){
-                                    logger.log(errLog,'ERROR'); // Send to LogDNA
+
+                                if (options.dev) {
+                                    logger.log(errLog, 'ERROR'); // Send to LogDNA
                                 }
-                                
+
                                 console.error(errLog); // Send to terminal too
                                 return process.exit(1); // Hard fail
                             }
@@ -365,7 +354,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
         .option('-l, --levels <levels>', 'Filter on levels (separate by comma)')
         .option('-t, --tags <tags>', 'Filter on tags (separate by comma)')
         .option('-j, --json', 'Output raw JSON', false)
-        .option(devOption.param,devOption.message)
+        .option(devOption.param, devOption.message)
         .action(function(query, options) {
             let params = utils.authParams(config);
             params.q = query || '';
@@ -399,20 +388,20 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                 try {
                     data = JSON.parse(data);
                 } catch (err) {
-                    let tmpErrLogWhy = 'malformed line: '+err.message;
+                    let tmpErrLogWhy = 'malformed line: ' + err.message;
                     let tmpErrLogMessage = `ERROR: ${tmpErrLogWhy}`;
-                    let tmpErrLogData = {'message':err.message,'code':err.code,'stack':err.stack};
+                    let tmpErrLogData = {message:err.message, code:err.code, stack:err.stack};
                     let errLog = utils.devLogPrim({
                         message: tmpErrLogMessage
                         , what: tmpLogWhat
-                        , why: tmpErrLogWhy 
+                        , why: tmpErrLogWhy
                         , additional: {errData:tmpErrLogData}
                     });
-                    
-                    if (options.dev){
-                        logger.log(errLog,'ERROR'); // Send to LogDNA
+
+                    if (options.dev) {
+                        logger.log(errLog, 'ERROR'); // Send to LogDNA
                     }
-                    
+
                     console.error(errLog); // Send to terminal too
                     return process.exit(1); // Hard fail
                 }
@@ -429,40 +418,40 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
             });
 
             ws.on('error', function(err) {
-                raw_err = err;
+                let rawErr = err;
                 err = err.toString();
                 if (err.indexOf('401') > -1) {
                     let tmpErrLogWhy = 'access token invlaid. If you created or changed your password recently, please \'logdna login\' or \'logdna ssologin\' again. Type \'logdna --help\' for more info.';
                     let tmpErrLogMessage = `ERROR: ${tmpErrLogWhy}`;
-                    let tmpErrLogData = {'message':raw_err.message,'code':raw_err.code,'stack':raw_err.stack};
+                    let tmpErrLogData = {message:rawErr.message, code:rawErr.code, stack:rawErr.stack};
                     let errLog = utils.devLogPrim({
                         message: tmpErrLogMessage
                         , what: tmpLogWhat
-                        , why: tmpErrLogWhy 
+                        , why: tmpErrLogWhy
                         , additional: {errData:tmpErrLogData}
                     });
-                    
-                    if (options.dev){
-                        logger.log(errLog,'ERROR'); // Send to LogDNA
+
+                    if (options.dev) {
+                        logger.log(errLog, 'ERROR'); // Send to LogDNA
                     }
-                    
+
                     console.error(errLog); // Send to terminal too
                     return process.exit(1); // Hard fail
                 } else {
                     let tmpErrLogWhy = err;
                     let tmpErrLogMessage = `ERROR: ${tmpErrLogWhy}`;
-                    let tmpErrLogData = {'message':raw_err.message,'code':raw_err.code,'stack':raw_err.stack};
+                    let tmpErrLogData = {message:rawErr.message, code:rawErr.code, stack:rawErr.stack};
                     let errLog = utils.devLogPrim({
                         message: tmpErrLogMessage
                         , what: tmpLogWhat
-                        , why: tmpErrLogWhy 
+                        , why: tmpErrLogWhy
                         , additional: {errData:tmpErrLogData}
                     });
-                    
-                    if (options.dev){
-                        logger.log(errLog,'ERROR'); // Send to LogDNA
+
+                    if (options.dev) {
+                        logger.log(errLog, 'ERROR'); // Send to LogDNA
                     }
-                    
+
                     console.error(errLog); // Send to terminal too
                 }
             });
@@ -474,25 +463,25 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
 
     program.command('switch')
         .description('If your login has access to more than one account, this command allows you to switch between them')
-        .option(devOption.param,devOption.message)
+        .option(devOption.param, devOption.message)
         .action(function(options) {
-            let tmpLogWhat = "Switching LogDNA account"
+            let tmpLogWhat = 'Switching LogDNA account';
             utils.apiGet(config, 'orgs', {}, function(error, response) {
                 if (error) {
                     let tmpErrLogWhy = error.message;
                     let tmpErrLogMessage = `ERROR: ${tmpErrLogWhy}`;
-                    let tmpErrLogData = {'message':error.message,'code':error.code,'stack':error.stack};
+                    let tmpErrLogData = {message:error.message, code:error.code, stack:error.stack};
                     let errLog = utils.devLogPrim({
                         message: tmpErrLogMessage
                         , what: tmpLogWhat
-                        , why: tmpErrLogWhy 
+                        , why: tmpErrLogWhy
                         , additional: {errData:tmpErrLogData}
                     });
-                    
-                    if (options.dev){
-                        logger.log(errLog,'ERROR'); // Send to LogDNA
+
+                    if (options.dev) {
+                        logger.log(errLog, 'ERROR'); // Send to LogDNA
                     }
-                    
+
                     console.error(errLog); // Send to terminal too
                     return process.exit(1); // Hard fail
                 }
@@ -521,19 +510,17 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                     utils.saveConfig(config, function(error, success) {
                         if (error) {
                             let tmpErrLogWhy = 'saving configuration';
-                            let tmpErrLogMessage = `ERROR: ${tmpErrLogWhy} - ${error.message}`;
-                            let tmpErrLogData = {'message':error.message,'code':error.code,'stack':error.stack};
                             let errLog = utils.devLogPrim({
-                                message: tmpErrLogMessage
+                                message: `ERROR: ${tmpErrLogWhy} - ${error.message}`
                                 , what: tmpLogWhat
-                                , why: tmpErrLogWhy 
-                                , additional: {errData:tmpErrLogData}
+                                , why: tmpErrLogWhy
+                                , additional: {errData:{message:error.message, code:error.code, stack:error.stack}}
                             });
-                            
-                            if (options.dev){
-                                logger.log(errLog,'ERROR'); // Send to LogDNA
+
+                            if (options.dev) {
+                                logger.log(errLog, 'ERROR'); // Send to LogDNA
                             }
-                            
+
                             console.error(errLog); // Send to terminal too
                             return process.exit(1); // Hard fail
                         }
@@ -556,7 +543,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
         .option('--from <from>', 'Unix/Natural Language timestamp of beginning of search timeframe. Wrap in quotes if NL. Ignored if --timeframe used.')
         .option('--to <to>', 'Unix/Natural Language timestamp of end of search timeframe. Wrap in quotes if NL. Ignored if --timeframe used.')
         .option('-j, --json', 'Output raw JSON', false)
-        .option(devOption.param,devOption.message)
+        .option(devOption.param, devOption.message)
         .action(function(query, options) {
             let params = {
                 q: query || ''
@@ -566,31 +553,32 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
 
             if (options.timeframe) {
                 let tmpLogWhat = 'search timeframe - chrono nlp';
-                let tmpLogWhy = 'search timeframe '+options.timeframe;
+                let tmpLogWhy = 'search timeframe ' + options.timeframe;
                 try {
                     let devLog = utils.devLogPrim({
                         what: tmpLogWhat
                         , why: tmpLogWhy
-                    })
+                    });
                     devLog.message = `SUCCESS: ${devLog.who} parsing --timeframe "${devLog.what}"`;
-                    
+
                     if (options.dev) {
-                        logger.log(devLog,'DEBUG'); // Send to LogDNA
+                        logger.log(devLog, 'DEBUG'); // Send to LogDNA
                         console.log(devLog); // Send to terminal too
                     }
 
                     // Chrono parse
-                    tfObj = chrono.parse(options.timeframe)[0];
+                    let tfObj = chrono.parse(options.timeframe)[0];
 
                     // Grab the From
                     let fromDate = tfObj.start.date();
                     params.from = fromDate.getTime();
+
                     devLog.message = `SUCCESS: ${devLog.who} search --timeframe from "${fromDate}"`;
                     devLog.when = new Date().toISOString();
-                    devLog.what = 'search timeframe - from - chrono nlp'
-                    devLog.why = 'search timeframe from '+fromDate
-                    if (options.dev){
-                        logger.log(devLog,'DEBUG'); // Send to LogDNA
+                    devLog.what = 'search timeframe - from - chrono nlp';
+                    devLog.why = 'search timeframe from ' + fromDate;
+                    if (options.dev) {
+                        logger.log(devLog, 'DEBUG'); // Send to LogDNA
                         console.log(devLog); // Send to terminal too
                     }
 
@@ -600,24 +588,24 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                         params.to = toDate.getTime();
                         devLog.message = `SUCCESS: ${devLog.who} search --timeframe to "${toDate}"`;
                         devLog.when = new Date().toISOString();
-                        devLog.what = 'search timeframe - to - chrono nlp'
-                        devLog.why = 'search timeframe to '+toDate
-                        if (options.dev){
-                            logger.log(devLog,'DEBUG'); // Send to LogDNA
+                        devLog.what = 'search timeframe - to - chrono nlp';
+                        devLog.why = 'search timeframe to ' + toDate;
+                        if (options.dev) {
+                            logger.log(devLog, 'DEBUG'); // Send to LogDNA
                             console.log(devLog); // Send to terminal too
                         }
                     }
                 } catch (err) {
-                    let tmpErrLogData = {'message':err.message,'code':err.code,'stack':err.stack};
-                    
+                    let tmpErrLogData = {message:err.message, code:err.code, stack:err.stack};
+
                     let errLog = utils.devLogPrim({
-                        message: 'ERROR: '+tmpLogWhy+' - '+err.message
+                        message: 'ERROR: ' + tmpLogWhy + ' - ' + err.message
                         , why: tmpLogWhy
                         , what: tmpLogWhat
                         , additional: {errData:tmpErrLogData}
                     });
-                    if (options.dev){
-                        logger.log(errLog,'ERROR'); // Send to LogDNA
+                    if (options.dev) {
+                        logger.log(errLog, 'ERROR'); // Send to LogDNA
                     }
 
                     console.error(errLog); // Send to terminal too
@@ -625,39 +613,39 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
             } else { // Skip From and To if Timeframe is used
                 if (options.from) {
                     let tmpLogWhat = 'search from - timestamp';
-                    let tmpLogWhy = 'search from '+options.from
+                    let tmpLogWhy = 'search from ' + options.from;
                     try {
                         let devLog = utils.devLogPrim({
                             what: tmpLogWhat
                             , why: tmpLogWhy
-                        })
+                        });
                         params.from = new Date(parseInt(options.from)).getTime();
                         devLog.message = `SUCCESS: ${devLog.who} search --from "${params.from}"`;
                         if (isNaN(params.from)) { // Int parsing failed
-                            devLog.what = 'search from - chrono nlp'
-                            tfObj = chrono.parse(options.from)[0];
+                            devLog.what = 'search from - chrono nlp';
+                            let tfObj = chrono.parse(options.from)[0];
 
                             let fromDate = tfObj.start.date();
                             params.from = fromDate.getTime();
-                            
+
                             devLog.message = `SUCCESS: ${devLog.who} search --from "${fromDate}"`;
                             devLog.when = new Date().toISOString();
                         }
-                        if (options.dev){
-                            logger.log(devLog,'DEBUG'); // Send to LogDNA
+                        if (options.dev) {
+                            logger.log(devLog, 'DEBUG'); // Send to LogDNA
                             console.log(devLog); // Send to terminal too
                         }
                     } catch (err) {
-                        let tmpErrLogData = {'message':err.message,'code':err.code,'stack':err.stack};
-                    
+                        let tmpErrLogData = {message:err.message, code:err.code, stack:err.stack};
+
                         let errLog = utils.devLogPrim({
-                            message: 'ERROR: '+tmpLogWhy+' - '+err.message
+                            message: 'ERROR: ' + tmpLogWhy + ' - ' + err.message
                             , why: tmpLogWhy
                             , what: tmpLogWhat
                             , additional: {errData:tmpErrLogData}
                         });
-                        if (options.dev){
-                            logger.log(errLog,'ERROR'); // Send to LogDNA
+                        if (options.dev) {
+                            logger.log(errLog, 'ERROR'); // Send to LogDNA
                         }
 
                         console.error(errLog); // Send to terminal too
@@ -666,39 +654,37 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
 
                 if (options.to) {
                     let tmpLogWhat = 'search to - timestamp';
-                    let tmpLogWhy = 'search to '+options.to;
+                    let tmpLogWhy = 'search to ' + options.to;
                     try {
                         let devLog = utils.devLogPrim({
                             what: tmpLogWhat
                             , why: tmpLogWhy
-                        })
+                        });
                         params.to = new Date(parseInt(options.to)).getTime();
                         devLog.message = `SUCCESS: ${devLog.who} search --to "${params.to}"`;
                         if (isNaN(params.to)) { // Int parsing failed
-                            devLog.what = 'search to - chrono nlp'
-                            tfObj = chrono.parse(options.to)[0];
-                            
+                            devLog.what = 'search to - chrono nlp';
+                            let tfObj = chrono.parse(options.to)[0];
+
                             let toDate = tfObj.start.date();
                             params.to = toDate.getTime();
-                            
+
                             devLog.message = `SUCCESS: ${devLog.who} search --to "${toDate}"`;
                             devLog.when = new Date().toISOString();
                         }
-                        if (options.dev){
-                            logger.log(devLog,'DEBUG'); // Send to LogDNA
+                        if (options.dev) {
+                            logger.log(devLog, 'DEBUG'); // Send to LogDNA
                             console.log(devLog); // Send to terminal too
                         }
                     } catch (err) {
-                        let tmpErrLogData = {'message':err.message,'code':err.code,'stack':err.stack};
-                    
                         let errLog = utils.devLogPrim({
-                            message: 'ERROR: '+tmpLogWhy+' - '+err.message
+                            message: 'ERROR: ' + tmpLogWhy + ' - ' + err.message
                             , why: tmpLogWhy
                             , what: tmpLogWhat
-                            , additional: {errData:tmpErrLogData}
+                            , additional: {errData:{message:err.message, code:err.code, stack:err.stack}}
                         });
-                        if (options.dev){
-                            logger.log(errLog,'ERROR'); // Send to LogDNA
+                        if (options.dev) {
+                            logger.log(errLog, 'ERROR'); // Send to LogDNA
                         }
 
                         console.error(errLog); // Send to terminal too
@@ -738,19 +724,19 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
             utils.apiGet(modifiedconfig, 'v1/export', params, function(error, body) {
                 if (error) {
                     let errLog = utils.devLogPrim({
-                        message: 'ERROR: '+error.message
+                        message: 'ERROR: ' + error.message
                         , what: 'search: v1/export API call'
                         , why: error.message
                         , additional: {
-                            errData: {'message':error.message,'code':error.code,'stack':error.stack}
+                            errData: {message:error.message, code:error.code, stack:error.stack}
                         }
                     });
-                    
-                    if (options.dev){
-                        logger.log(errLog,'ERROR'); // Send to LogDNA
+
+                    if (options.dev) {
+                        logger.log(errLog, 'ERROR'); // Send to LogDNA
                     }
                     console.error(errLog); // Send to terminal too
-                    return proccess.exit(1);
+                    return process.exit(1);
                 }
                 if (body && body.range && body.range.from && body.range.to) {
                     t = new Date(body.range.from);
@@ -797,21 +783,18 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                 config.last_timestamp = last_timestamp.toJSON();
                 utils.saveConfig(config, function(error, success) {
                     if (error) {
-                        let tmpLogWhat = 'search'
                         let tmpErrLogWhy = 'saving configuration';
-                        let tmpErrLogMessage = `ERROR: ${tmpErrLogWhy} - ${error.message}`;
-                        let tmpErrLogData = {'message':error.message,'code':error.code,'stack':error.stack};
                         let errLog = utils.devLogPrim({
-                            message: tmpErrLogMessage
-                            , what: tmpLogWhat
+                            message: `ERROR: ${tmpErrLogWhy} - ${error.message}`
+                            , what: 'search'
                             , why: tmpErrLogWhy
-                            , additional: {errData:tmpErrLogData}
+                            , additional: {errData:{message:error.message, code:error.code, stack:error.stack}}
                         });
-                        
-                        if (options.dev){
-                            logger.log(errLog,'ERROR'); // Send to LogDNA
+
+                        if (options.dev) {
+                            logger.log(errLog, 'ERROR'); // Send to LogDNA
                         }
-                        
+
                         console.error(errLog); // Send to terminal too
                         return process.exit(1); // Hard fail
                     }
@@ -822,20 +805,20 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
     program.command('info')
         .alias('whoami')
         .description('Show current logged in user info')
-        .option(devOption.param,devOption.message)
-        .action(function() {
+        .option(devOption.param, devOption.message)
+        .action(function(_, options) {
             utils.apiGet(config, 'info', function(error, body) {
                 if (error) {
                     let errLog = utils.devLogPrim({
-                        message: 'ERROR: info - '+error.message
+                        message: 'ERROR: info - ' + error.message
                         , what: 'showing user info / whoami'
                         , why: error.message
                         , additional: {
-                            errData: {'message':error.message,'code':error.code,'stack':error.stack}
+                            errData: {message:error.message, code:error.code, stack:error.stack}
                         }
-                    })
-                    if (options.dev){
-                        logger.log(errLog,'ERROR'); // Send to LogDNA
+                    });
+                    if (options.dev) {
+                        logger.log(errLog, 'ERROR'); // Send to LogDNA
                     }
                     console.error(errLog); // Send to terminal too
                     return process.exit(1);
@@ -851,7 +834,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                 utils.uiDisp('No update available. You have the latest version: ' + pkg.version);
             });
         });
-    
+
     // helper for tail/search -h due to -h conflict for --hosts
     if (process.argv && process.argv.length === 4 && ['tail', 'search'].indexOf(process.argv[2]) >= 0 && process.argv[3] === '-h') process.argv[3] = '--help';
 
@@ -860,17 +843,17 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
 });
 
 process.on('uncaughtException', function(err) {
-    if (typeof err == 'string') err = {message:err};
+    if (typeof err === 'string') err = {message:err};
     let tmpWhat = 'uncaught exception';
-    let tmpWhy = tmpWhat+' - '+err.message;
-    let errLog = utils.devLogPrim( {
-        message:'ERROR: '+tmpWhy
+    let tmpWhy = tmpWhat + ' - ' + err.message;
+    let errLog = utils.devLogPrim({
+        message:'ERROR: ' + tmpWhy
         , why: tmpWhy
         , what: tmpWhat
         , additional: {
-            errData: {'message':err.message,'code':err.code,'stack':err.stack}
+            errData: {message:err.message, code:err.code, stack:err.stack}
         }
     });
-    
+
     console.error(errLog); // Send to terminal too
 });
