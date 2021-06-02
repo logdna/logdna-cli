@@ -3,8 +3,8 @@ const qs = require('querystring');
 const program = require('commander');
 const properties = require('properties');
 const chrono = require('chrono-node');
-
-const logdna = require('@logdna/logger');
+const logdnaWinston = require('logdna-winston');
+const winston = require('winston');
 
 // Internal Modules
 let config = require('./lib/config');
@@ -21,20 +21,49 @@ const EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-
 /* Developer Logging */
 
 // Logs for troubleshooting/dev purposes are included via the -d/--dev flag for all options
-// Be sure to set environment var LOGDNA_API_KEY prior to running to see logs in LogDNA
+// In order to pipe the developer logs to LogDNA, you should set the account API Key using
+// `LOGDNA_API_KEY` environment variable.
 
-// Instantiation of the @logdna/logger object
-let logger = logdna.createLogger(
-    config.LOGDNA_LOGGING.API_KEY
-    , {
-        level: config.LOGDNA_LOGGING.DEFAULT_LEVEL
-        , app: config.LOGDNA_LOGGING.APP
+// Note that we have used a standard log primitive via lib/utils.js -> devLogPrim() with
+// "what", "why", "where", "who" and "when" to ensure full context is included as well as
+// a "message" field for quick scanning in LogDNA.
+
+// Using Winston logger with Console by default
+const consoleFormat = winston.format.printf(function(info) {
+    let logFrmt = `${info.timestamp} ${info.level}:`;
+    if ('message' in info.message) {
+        logFrmt = `${logFrmt} ${JSON.stringify(info.message['message'])}`;
+    } else {
+        logFrmt = `${logFrmt} ${JSON.stringify(info.message)}`;
+    }
+    return logFrmt
+});
+let logger = winston.createLogger({
+    level: config.LOGDNA_LOGGING.MAX_LEVEL
+    , transports: [
+        new winston.transports.Console({
+            format: winston.format.combine(
+                winston.format.colorize(),
+                winston.format.timestamp(),
+                consoleFormat
+            )
+        })
+    ]
+});
+
+// Add LogDNA-Winston transport IF 'LOGDNA_API_KEY' env var is set
+if (config.LOGDNA_LOGGING.API_KEY != '' && typeof config.LOGDNA_LOGGING.API_KEY == 'string' ) {
+    let logdnaOptions = {
+        key: config.LOGDNA_LOGGING.API_KEY
         , hostname: config.LOGDNA_LOGGING.HOSTNAME
+        , app: config.LOGDNA_LOGGING.APP
+        , level: config.LOGDNA_LOGGING.MAX_LEVEL
         , tags: config.LOGDNA_LOGGING.TAGS
         , indexMeta: config.LOGDNA_LOGGING.INDEXMETA
         , url: config.LOGDNA_LOGGING.ENDPOINT_URL
-    }
-);
+    };
+    logger.add(new logdnaWinston(logdnaOptions));
+}
 
 process.title = 'logdna';
 program._name = 'logdna';
@@ -86,11 +115,9 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                         , what: tmpLogWhat
                         , why: tmpDevLogWhy
                     });
-                    if (options.dev) {
-                        logger.log(errLog, 'ERROR'); // Send to LogDNA
-                    }
 
-                    console.error(errLog); // Display in console too
+                    logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
+
                     return process.exit(1); // Hard fail
                 }
 
@@ -116,11 +143,8 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                                         , additional: {errData: tmpErrLogData}
                                     });
 
-                                    if (options.dev) {
-                                        logger.log(errLog, 'ERROR'); // Send to LogDNA
-                                    }
+                                    logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
 
-                                    console.error(errLog); // Send to terminal too
                                     return process.exit(1); // Hard fail
                                 }
                                 config.email = email;
@@ -147,11 +171,8 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                                             , additional: {errData:{message:error.message, code:error.code, stack:error.stack}}
                                         });
 
-                                        if (options.dev) {
-                                            logger.log(errLog, 'ERROR'); // Send to LogDNA
-                                        }
+                                        logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
 
-                                        console.error(errLog); // Send to terminal too
                                         return process.exit(1); // Hard fail
                                     }
                                     utils.uiDisp();
@@ -209,11 +230,8 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                             , additional: {errData:tmpErrLogData}
                         });
 
-                        if (options.dev) {
-                            logger.log(errLog, 'ERROR'); // Send to LogDNA
-                        }
+                        logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
 
-                        console.error(errLog); // Send to terminal too
                         return process.exit(1); // Hard fail
                     }
 
@@ -240,11 +258,8 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                                 , additional: {errData:{message:error.message, code:error.code, stack:error.stack}}
                             });
 
-                            if (options.dev) {
-                                logger.log(errLog, 'ERROR'); // Send to LogDNA
-                            }
+                            logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
 
-                            console.error(errLog); // Send to terminal too
                             return process.exit(1); // Hard fail
                         }
                         utils.uiDisp('Logged in successfully as: ' + body.email + '. Saving credentials to local config.');
@@ -273,11 +288,9 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                             , what: tmpDevLogWhat
                             , why: 'regex failed to validate'
                         });
-                        if (options.dev) {
-                            logger.log(errLog, 'ERROR'); // Send to LogDNA
-                        }
 
-                        console.error(errLog); // Display in console too
+                        logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
+
                         return process.exit(1); // Hard fail
                     }
 
@@ -297,11 +310,8 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                                 , additional: {errData:tmpErrLogData}
                             });
 
-                            if (options.dev) {
-                                logger.log(errLog, 'ERROR'); // Send to LogDNA
-                            }
+                            logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
 
-                            console.error(errLog); // Send to terminal too
                             return process.exit(1); // Hard fail
                         }
 
@@ -325,11 +335,8 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                                     , additional: {errData:{message:error.message, code:error.code, stack:error.stack}}
                                 });
 
-                                if (options.dev) {
-                                    logger.log(errLog, 'ERROR'); // Send to LogDNA
-                                }
+                                logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
 
-                                console.error(errLog); // Send to terminal too
                                 return process.exit(1); // Hard fail
                             }
                             utils.uiDisp('Logged in successfully as: ' + email + '. Saving credentials to local config.');
@@ -398,11 +405,8 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                         , additional: {errData:tmpErrLogData}
                     });
 
-                    if (options.dev) {
-                        logger.log(errLog, 'ERROR'); // Send to LogDNA
-                    }
+                    logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
 
-                    console.error(errLog); // Send to terminal too
                     return process.exit(1); // Hard fail
                 }
 
@@ -431,11 +435,8 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                         , additional: {errData:tmpErrLogData}
                     });
 
-                    if (options.dev) {
-                        logger.log(errLog, 'ERROR'); // Send to LogDNA
-                    }
+                    logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
 
-                    console.error(errLog); // Send to terminal too
                     return process.exit(1); // Hard fail
                 } else {
                     let tmpErrLogWhy = err;
@@ -448,11 +449,8 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                         , additional: {errData:tmpErrLogData}
                     });
 
-                    if (options.dev) {
-                        logger.log(errLog, 'ERROR'); // Send to LogDNA
-                    }
+                    logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
 
-                    console.error(errLog); // Send to terminal too
                 }
             });
 
@@ -478,11 +476,8 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                         , additional: {errData:tmpErrLogData}
                     });
 
-                    if (options.dev) {
-                        logger.log(errLog, 'ERROR'); // Send to LogDNA
-                    }
+                    logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
 
-                    console.error(errLog); // Send to terminal too
                     return process.exit(1); // Hard fail
                 }
 
@@ -517,11 +512,8 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                                 , additional: {errData:{message:error.message, code:error.code, stack:error.stack}}
                             });
 
-                            if (options.dev) {
-                                logger.log(errLog, 'ERROR'); // Send to LogDNA
-                            }
+                            logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
 
-                            console.error(errLog); // Send to terminal too
                             return process.exit(1); // Hard fail
                         }
                         utils.uiDisp('Successfully switched account to ' + response[selection].name);
@@ -559,41 +551,38 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                         what: tmpLogWhat
                         , why: tmpLogWhy
                     });
-                    devLog.message = `SUCCESS: ${devLog.who} parsing --timeframe "${devLog.what}"`;
-
-                    if (options.dev) {
-                        logger.log(devLog, 'DEBUG'); // Send to LogDNA
-                        console.log(devLog); // Send to terminal too
-                    }
 
                     // Chrono parse
                     let tfObj = chrono.parse(options.timeframe)[0];
+                    if (typeof tfObj != 'undefined') { // Success grabbing something from Chrono
+                        // Grab the From
+                        let fromDate = tfObj.start.date();
+                        params.from = fromDate.getTime();
 
-                    // Grab the From
-                    let fromDate = tfObj.start.date();
-                    params.from = fromDate.getTime();
-
-                    devLog.message = `SUCCESS: ${devLog.who} search --timeframe from "${fromDate}"`;
-                    devLog.when = new Date().toISOString();
-                    devLog.what = 'search timeframe - from - chrono nlp';
-                    devLog.why = 'search timeframe from ' + fromDate;
-                    if (options.dev) {
-                        logger.log(devLog, 'DEBUG'); // Send to LogDNA
-                        console.log(devLog); // Send to terminal too
-                    }
-
-                    // Grab the To (when applicable)
-                    if (tfObj.end) {
-                        let toDate = tfObj.end.date();
-                        params.to = toDate.getTime();
-                        devLog.message = `SUCCESS: ${devLog.who} search --timeframe to "${toDate}"`;
+                        devLog.message = `SUCCESS: ${devLog.who} search --timeframe from "${fromDate}"`;
                         devLog.when = new Date().toISOString();
-                        devLog.what = 'search timeframe - to - chrono nlp';
-                        devLog.why = 'search timeframe to ' + toDate;
+                        devLog.what = 'search timeframe - from - chrono nlp';
+                        devLog.why = 'search timeframe from ' + fromDate;
                         if (options.dev) {
-                            logger.log(devLog, 'DEBUG'); // Send to LogDNA
-                            console.log(devLog); // Send to terminal too
+                            logger.log({message:devLog, level:'debug'}); // Send to console and LogDNA if API key is set
                         }
+
+                        // Grab the To (when applicable)
+                        if (tfObj.end) {
+                            let toDate = tfObj.end.date();
+                            params.to = toDate.getTime();
+                            devLog.message = `SUCCESS: ${devLog.who} search --timeframe to "${toDate}"`;
+                            devLog.when = new Date().toISOString();
+                            devLog.what = 'search timeframe - to - chrono nlp';
+                            devLog.why = 'search timeframe to ' + toDate;
+                            if (options.dev) {
+                                logger.log({message:devLog, level:'debug'}); // Send to console and LogDNA
+                            }
+                        }
+                    } else {
+                        devLog.message = `FAIL: valid time required - ${devLog.who} search --timeframe "${devLog.what}"`;
+                        devLog.when = new Date().toISOString();
+                        logger.log({message:devLog, level:'info'}); // Send to console and LogDNA
                     }
                 } catch (err) {
                     let tmpErrLogData = {message:err.message, code:err.code, stack:err.stack};
@@ -604,11 +593,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                         , what: tmpLogWhat
                         , additional: {errData:tmpErrLogData}
                     });
-                    if (options.dev) {
-                        logger.log(errLog, 'ERROR'); // Send to LogDNA
-                    }
-
-                    console.error(errLog); // Send to terminal too
+                    logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
                 }
             } else { // Skip From and To if Timeframe is used
                 if (options.from) {
@@ -624,16 +609,23 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                         if (isNaN(params.from)) { // Int parsing failed
                             devLog.what = 'search from - chrono nlp';
                             let tfObj = chrono.parse(options.from)[0];
+                            if (typeof tfObj != 'undefined') { // Success grabbing something from Chrono
 
-                            let fromDate = tfObj.start.date();
-                            params.from = fromDate.getTime();
+                                let fromDate = tfObj.start.date();
+                                params.from = fromDate.getTime();
 
-                            devLog.message = `SUCCESS: ${devLog.who} search --from "${fromDate}"`;
-                            devLog.when = new Date().toISOString();
-                        }
-                        if (options.dev) {
-                            logger.log(devLog, 'DEBUG'); // Send to LogDNA
-                            console.log(devLog); // Send to terminal too
+                                devLog.message = `SUCCESS: ${devLog.who} search --from "${fromDate}"`;
+                                devLog.when = new Date().toISOString();
+
+                                if (options.dev) {
+                                    logger.log({message:devLog, level:'debug'}); // Send to console and LogDNA if API key is set
+                                }
+                            } else {
+                                devLog.message = `FAIL: valid time required -  ${devLog.who} search --from "${options.from}"`;
+                                devLog.when = new Date().toISOString();
+                                logger.log({message:devLog, level:'info'}); // Send to console and LogDNA
+                                params.from = null;
+                            }
                         }
                     } catch (err) {
                         let tmpErrLogData = {message:err.message, code:err.code, stack:err.stack};
@@ -644,11 +636,8 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                             , what: tmpLogWhat
                             , additional: {errData:tmpErrLogData}
                         });
-                        if (options.dev) {
-                            logger.log(errLog, 'ERROR'); // Send to LogDNA
-                        }
 
-                        console.error(errLog); // Send to terminal too
+                        logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
                     }
                 }
 
@@ -665,16 +654,22 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                         if (isNaN(params.to)) { // Int parsing failed
                             devLog.what = 'search to - chrono nlp';
                             let tfObj = chrono.parse(options.to)[0];
+                            if (typeof tfObj != 'undefined') {
+                                let toDate = tfObj.start.date();
+                                params.to = toDate.getTime();
 
-                            let toDate = tfObj.start.date();
-                            params.to = toDate.getTime();
+                                devLog.message = `SUCCESS: ${devLog.who} search --to "${toDate}"`;
+                                devLog.when = new Date().toISOString();
 
-                            devLog.message = `SUCCESS: ${devLog.who} search --to "${toDate}"`;
-                            devLog.when = new Date().toISOString();
-                        }
-                        if (options.dev) {
-                            logger.log(devLog, 'DEBUG'); // Send to LogDNA
-                            console.log(devLog); // Send to terminal too
+                                if (options.dev) {
+                                    logger.log({message:devLog, level:'debug'}); // Send to console and LogDNA if API key is set
+                                }
+                            } else {
+                                devLog.message = `FAIL: valid time required - ${devLog.who} search --to "${options.to}"`;
+                                devLog.when = new Date().toISOString();
+                                logger.log({message:devLog, level:'info'}); // Send to console and LogDNA
+                                params.to = null;
+                            }
                         }
                     } catch (err) {
                         let errLog = utils.devLogPrim({
@@ -683,11 +678,9 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                             , what: tmpLogWhat
                             , additional: {errData:{message:err.message, code:err.code, stack:err.stack}}
                         });
-                        if (options.dev) {
-                            logger.log(errLog, 'ERROR'); // Send to LogDNA
-                        }
 
-                        console.error(errLog); // Send to terminal too
+                        logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
+
                     }
                 }
             }
@@ -732,10 +725,8 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                         }
                     });
 
-                    if (options.dev) {
-                        logger.log(errLog, 'ERROR'); // Send to LogDNA
-                    }
-                    console.error(errLog); // Send to terminal too
+                    logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
+
                     return process.exit(1);
                 }
                 if (body && body.range && body.range.from && body.range.to) {
@@ -791,11 +782,8 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                             , additional: {errData:{message:error.message, code:error.code, stack:error.stack}}
                         });
 
-                        if (options.dev) {
-                            logger.log(errLog, 'ERROR'); // Send to LogDNA
-                        }
+                        logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
 
-                        console.error(errLog); // Send to terminal too
                         return process.exit(1); // Hard fail
                     }
                 });
@@ -817,10 +805,9 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                             errData: {message:error.message, code:error.code, stack:error.stack}
                         }
                     });
-                    if (options.dev) {
-                        logger.log(errLog, 'ERROR'); // Send to LogDNA
-                    }
-                    console.error(errLog); // Send to terminal too
+
+                    logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
+
                     return process.exit(1);
                 }
                 utils.uiDisp(body);
@@ -855,5 +842,5 @@ process.on('uncaughtException', function(err) {
         }
     });
 
-    console.error(errLog); // Send to terminal too
+    logger.log({message:errLog, level:'error'});
 });
