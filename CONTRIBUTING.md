@@ -36,7 +36,7 @@ is made. The rule set being enforced is provided by [.eslintrc](./.eslintrc)
 
 ## Questions?
 
-The easiest way to get our attention is to comment on an existing, or open a new
+The easiest way to get our attention is to comment on an existing or open a new
 [issue][].
 
 [eslint]: https://eslint.org

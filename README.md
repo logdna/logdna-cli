@@ -107,13 +107,13 @@ $ logdna switch
 ```
 
 ## Developer Logs
-Logs for troubleshooting during development are included.  These will pipe to both console and [LogDNA](https://www.logdna.com/).
+Logs for troubleshooting during development are included. These logs will pipe to console and optionally to [LogDNA](https://www.logdna.com/).
 
-Switch dev logs on via the `-d` or `--dev` flag
+Switch dev logs on via the `-d` or `--dev` flag.
 
 In order to pipe the developer logs to LogDNA, you should set the account API Key using `LOGDNA_API_KEY` environment variable.  Otherwise, dev logs will only been seen in the console.
 
-Currently the coverage is limited to index.js and more heavily in --timeframe, --from and --to.
+Currently the coverage is limited to index.js and more heavily in `--timeframe`, `--from` and `--to`.
 
 
 ## Contributing
