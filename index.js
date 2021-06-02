@@ -32,11 +32,11 @@ const EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-
 const consoleFormat = winston.format.printf(function(info) {
     let logFrmt = `${info.timestamp} ${info.level}:`;
     if ('message' in info.message) {
-        logFrmt = `${logFrmt} ${JSON.stringify(info.message['message'])}`;
+        logFrmt = `${logFrmt} ${JSON.stringify(info.message.message)}`;
     } else {
         logFrmt = `${logFrmt} ${JSON.stringify(info.message)}`;
     }
-    return logFrmt
+    return logFrmt;
 });
 let logger = winston.createLogger({
     level: config.LOGDNA_LOGGING.MAX_LEVEL
@@ -52,7 +52,7 @@ let logger = winston.createLogger({
 });
 
 // Add LogDNA-Winston transport IF 'LOGDNA_API_KEY' env var is set
-if (config.LOGDNA_LOGGING.API_KEY != '' && typeof config.LOGDNA_LOGGING.API_KEY == 'string' ) {
+if (config.LOGDNA_LOGGING.API_KEY !== '' && typeof config.LOGDNA_LOGGING.API_KEY === 'string') {
     let logdnaOptions = {
         key: config.LOGDNA_LOGGING.API_KEY
         , hostname: config.LOGDNA_LOGGING.HOSTNAME
@@ -554,7 +554,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
 
                     // Chrono parse
                     let tfObj = chrono.parse(options.timeframe)[0];
-                    if (typeof tfObj != 'undefined') { // Success grabbing something from Chrono
+                    if (typeof tfObj !== 'undefined') { // Success grabbing something from Chrono
                         // Grab the From
                         let fromDate = tfObj.start.date();
                         params.from = fromDate.getTime();
@@ -609,7 +609,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                         if (isNaN(params.from)) { // Int parsing failed
                             devLog.what = 'search from - chrono nlp';
                             let tfObj = chrono.parse(options.from)[0];
-                            if (typeof tfObj != 'undefined') { // Success grabbing something from Chrono
+                            if (typeof tfObj !== 'undefined') { // Success grabbing something from Chrono
 
                                 let fromDate = tfObj.start.date();
                                 params.from = fromDate.getTime();
@@ -654,7 +654,7 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
                         if (isNaN(params.to)) { // Int parsing failed
                             devLog.what = 'search to - chrono nlp';
                             let tfObj = chrono.parse(options.to)[0];
-                            if (typeof tfObj != 'undefined') {
+                            if (typeof tfObj !== 'undefined') {
                                 let toDate = tfObj.start.date();
                                 params.to = toDate.getTime();
 
