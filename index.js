@@ -38,7 +38,7 @@ const consoleFormat = winston.format.printf(function(info) {
     }
     return logFrmt;
 });
-let logger = winston.createLogger({
+const logger = winston.createLogger({
     level: config.LOGDNA_LOGGING.MAX_LEVEL
     , transports: [
         new winston.transports.Console({
