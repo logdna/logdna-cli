@@ -113,7 +113,7 @@ Switch dev logs on via the `-d` or `--dev` flag.
 
 In order to pipe the developer logs to LogDNA, you should set the account API Key using `LOGDNA_API_KEY` environment variable.  Otherwise, dev logs will only been seen in the console.
 
-Currently the coverage is limited to index.js and more heavily in `--timeframe`, `--from` and `--to`.
+Currently the dev log coverage is limited to the code regarding `--timeframe`, `--from` and `--to` in [index.js](./index.js).
 
 
 ## Contributing
