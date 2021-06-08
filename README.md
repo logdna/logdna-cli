@@ -87,7 +87,7 @@ $ logdna search "logdna cli" -a logdna.log -t tag1,tag2 -n 300
 # Search via UNIX timestamps
 $ logdna search "logdna" --from 1541100040931 --to 1541102940000
 # Search via Natural Language (Chrono)
-# Ensure to enclose nl strings in ""
+# Ensure to enclose natural langauge strings in ""
 # Must include date reference (i.e., `May 26`, `yesterday`, or the like)
 $ logdna search "logdna" --from "yesterday at 3pm" --to "today at 3:05pm"
 $ logdna search "logdna" --timeframe "May 26 at 3pm to 3:05pm"
