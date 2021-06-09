@@ -20,7 +20,7 @@
             "before": false,
             "after": true
         }],
-        "comma-style": [2, 'first'],
+        "comma-style": [2, "first"],
         "complexity": [0, 11],
         "consistent-return": 0,
         "consistent-this": [2, "that"],

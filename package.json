@@ -20,10 +20,13 @@
   },
   "homepage": "https://github.com/logdna/logdna-cli",
   "dependencies": {
+    "chrono-node": "^2.2.6",
     "commander": "^2.20.0",
+    "logdna-winston": "^3.0.5",
     "properties": "^1.2.1",
     "request": "^2.88.0",
     "semver": "^6.1.2",
+    "winston": "^3.3.3",
     "ws": "^7.0.1"
   },
   "devDependencies": {

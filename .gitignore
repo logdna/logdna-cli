@@ -45,3 +45,6 @@ package-lock.json
 *.deb
 *.pkg
 *.exe
+
+# extra
+set_env.sh

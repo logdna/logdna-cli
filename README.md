@@ -84,7 +84,15 @@ $ logdna tail -l error,warn
 
 # Search
 $ logdna search "logdna cli" -a logdna.log -t tag1,tag2 -n 300
+# Search via UNIX timestamps
 $ logdna search "logdna" --from 1541100040931 --to 1541102940000
+# Search via Natural Language (Chrono)
+# Ensure to enclose natural langauge strings in ""
+# Must include date reference (i.e., `May 26`, `yesterday`, or the like)
+$ logdna search "logdna" --from "yesterday at 3pm" --to "today at 3:05pm"
+$ logdna search "logdna" --timeframe "May 26 at 3pm to 3:05pm"
+# Search with dev logs
+$ logdna search "logdna" --timeframe "May 28 at 1pm to 3:05pm" -d
 
 # Other
 $ logdna info
@@ -97,6 +105,16 @@ $ logdna switch
 > 2: Strickland Propane
 > Choose account [1-2]:
 ```
+
+## Developer Logs
+Logs for troubleshooting during development are included. These logs will pipe to console and optionally to [LogDNA](https://www.logdna.com/).
+
+Switch dev logs on via the `-d` or `--dev` flag.
+
+In order to pipe the developer logs to LogDNA, you should set the account API Key using `LOGDNA_API_KEY` environment variable.  Otherwise, dev logs will only been seen in the console.
+
+Currently the dev log coverage is limited to the code regarding `--timeframe`, `--from` and `--to` in [index.js](./index.js).
+
 
 ## Contributing
 
