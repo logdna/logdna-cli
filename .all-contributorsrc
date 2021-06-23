@@ -111,6 +111,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "stuckj",
+      "name": "Jonathan Stucklen",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2205578?v=4",
+      "profile": "https://github.com/stuckj",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7
