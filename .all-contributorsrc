@@ -101,6 +101,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "jakedipity",
+      "name": "Jacob Hull",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29671917?v=4",
+      "profile": "https://github.com/jakedipity",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7
