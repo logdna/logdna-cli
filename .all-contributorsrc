@@ -81,6 +81,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "yields",
+      "name": "Amir Abushareb",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1661587?v=4",
+      "profile": "https://github.com/yields",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7
