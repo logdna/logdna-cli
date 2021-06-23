@@ -1,6 +1,6 @@
 # LogDNA CLI
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-6-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 The LogDNA CLI allows you to sign up for a new account and tail your logs right from the command line.
@@ -137,6 +137,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://ernesti.me/"><img src="https://avatars.githubusercontent.com/u/20255948?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Ernest Iliiasov</b></sub></a><br /><a href="https://github.com/logdna/logdna-cli/commits?author=ernestii" title="Code">💻</a> <a href="https://github.com/logdna/logdna-cli/commits?author=ernestii" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/beefcheeks"><img src="https://avatars.githubusercontent.com/u/4133158?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Ryan</b></sub></a><br /><a href="https://github.com/logdna/logdna-cli/commits?author=beefcheeks" title="Code">💻</a> <a href="https://github.com/logdna/logdna-cli/commits?author=beefcheeks" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/meffij"><img src="https://avatars.githubusercontent.com/u/8787479?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Calvin Cochran</b></sub></a><br /><a href="https://github.com/logdna/logdna-cli/commits?author=meffij" title="Code">💻</a> <a href="https://github.com/logdna/logdna-cli/commits?author=meffij" title="Documentation">📖</a></td>
+    <td align="center"><a href="http://stevenedouard.com/"><img src="https://avatars.githubusercontent.com/u/3053263?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Steven Edouard</b></sub></a><br /><a href="https://github.com/logdna/logdna-cli/commits?author=sedouard" title="Code">💻</a> <a href="https://github.com/logdna/logdna-cli/commits?author=sedouard" title="Documentation">📖</a></td>
   </tr>
 </table>
 
