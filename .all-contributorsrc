@@ -61,6 +61,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "sedouard",
+      "name": "Steven Edouard",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3053263?v=4",
+      "profile": "http://stevenedouard.com/",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7
