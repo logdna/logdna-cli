@@ -41,6 +41,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "beefcheeks",
+      "name": "Ryan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/4133158?v=4",
+      "profile": "https://github.com/beefcheeks",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7
