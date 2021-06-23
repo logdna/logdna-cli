@@ -91,6 +91,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "braxtonj",
+      "name": "Braxton",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7331755?v=4",
+      "profile": "https://github.com/braxtonj",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7
