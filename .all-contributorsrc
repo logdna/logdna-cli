@@ -20,6 +20,17 @@
         "doc",
         "test"
       ]
+    },
+    {
+      "login": "leeliu",
+      "name": "Lee Liu",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1399797?v=4",
+      "profile": "https://github.com/leeliu",
+      "contributions": [
+        "code",
+        "doc",
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7
