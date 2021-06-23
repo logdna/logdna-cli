@@ -71,6 +71,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "ydshah2",
+      "name": "Yash Shah",
+      "avatar_url": "https://avatars.githubusercontent.com/u/11240269?v=4",
+      "profile": "https://github.com/ydshah2",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7
