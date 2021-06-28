@@ -10,6 +10,8 @@ The LogDNA CLI allows you to sign up for a new account and tail your logs right 
 
 ## Getting Started
 
+Note that prebuilt images are of [v2.0.0](https://github.com/logdna/logdna-cli/tree/2.0.0) (without natural language time), not of [master](https://github.com/logdna/logdna-cli/tree/master).  Please bear with us as we convert to an automated release pipeline for this repo.
+
 ### macOS
 
 Download the [LogDNA CLI installer for Mac](http://repo.logdna.com/mac/logdna-cli.pkg).  
