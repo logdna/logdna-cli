@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
+- Add periodic websocket pings when connected to livetail. This adds support for aggresive proxies that disconnect idle connections
 - Natural Language Processing on timestamps using [Chrono](https://github.com/wanasit/chrono).  Introduction of --timeframe option for search.  Addition of developer logging via LogDNA for troubleshooting.
 - Changed CONTRIBUTING.md to reflect "fork-and-PR" process
 
