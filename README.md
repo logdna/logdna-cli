@@ -10,36 +10,10 @@ The LogDNA CLI allows you to sign up for a new account and tail your logs right 
 
 ## Getting Started
 
-### macOS
+Install [Node.JS](https://nodejs.org/en/)
 
-Download the [LogDNA CLI installer for Mac](http://repo.logdna.com/mac/logdna-cli.pkg).  
-
-Alternatively install via [brew cask](https://caskroom.github.io/):
-```
-brew cask update
-brew cask install logdna-cli
-```
-
-### Windows
-
-To install on Windows, using [chocolatey](https://chocolatey.org):
-
-```
-choco install logdna
-```
-
-### Linux
-
-For Ubuntu/Debian:
-
-```bash
-sudo wget -qO /tmp/logdna-cli.deb http://repo.logdna.com/linux/logdna-cli.deb && sudo dpkg -i /tmp/logdna-cli.deb
-```
-
-For RHEL/CentOS:
-
-```bash
-sudo wget -qO /tmp/logdna-cli.rpm http://repo.logdna.com/linux/logdna-cli.rpm && sudo rpm -ivh /tmp/logdna-cli.rpm
+```shell
+npm install -g logdna-cli@latest
 ```
 
 ### From Source

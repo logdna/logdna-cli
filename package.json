@@ -4,7 +4,15 @@
   "description": "LogDNA CLI",
   "main": "index.js",
   "scripts": {
-    "lint": "node_modules/.bin/grunt lint"
+    "lint": "node_modules/.bin/grunt lint",
+    "release": "semantic-release",
+    "release:dry": "semantic-release --dry-run --no-ci --branches=${BRANCH_NAME:-master}"
+  },
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "extends": "semantic-release-config-logdna"
   },
   "repository": {
     "type": "git",
@@ -35,6 +43,8 @@
     "grunt-eslint": "^22.0.0",
     "grunt-exec": "^3.0.0",
     "grunt-line-remover": "0.0.2",
-    "load-grunt-tasks": "^5.0.0"
+    "load-grunt-tasks": "^5.0.0",
+    "semantic-release": "^17.4.7",
+    "semantic-release-config-logdna": "^1.3.0"
   }
 }
