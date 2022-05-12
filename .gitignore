@@ -36,6 +36,8 @@ logdna.gz
 version
 package-lock.json
 
+target/
+
 # Some extra data
 package-lock.json
 *~
