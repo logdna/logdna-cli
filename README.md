@@ -17,7 +17,7 @@ Download the [LogDNA CLI installer for Mac](http://repo.logdna.com/mac/logdna-cl
 Alternatively install via [brew cask](https://caskroom.github.io/):
 ```
 brew cask update
-brew cask install logdna-cli
+brew install --cask logdna-cli
 ```
 
 ### Windows
