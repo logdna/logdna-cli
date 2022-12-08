@@ -63,7 +63,7 @@ node index.js ssologin
 
 | Command | Description |
 | - | - |
-| `logdna register [email]` | Register a new LogDNA account |
+| ~~`logdna register [email]`~~ | _This command is no longer functional.  Please use https://www.mezmo.com/sign-up-today to register_ |
 | `logdna ssologin` | Log in to a LogDNA via single sign-on |
 | `logdna login [email]` | Log in to LogDNA |
 | `logdna tail [options] [query]` | Live tail with optional filtering. Options include `-h`, `-a`, `-l`, `-t` to filter by hosts, apps, levels or tags respectively. Run `logdna tail --help` to learn more. |
@@ -75,9 +75,6 @@ node index.js ssologin
 ### Examples
 
 ```sh
-# Register
-$ logdna register user@example.com
-
 # Login
 $ logdna login user@example.com
 
