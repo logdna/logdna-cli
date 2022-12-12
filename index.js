@@ -73,8 +73,6 @@ program
     .on('--help', function() {
         utils.uiDisp('  Examples:');
         utils.uiDisp();
-        utils.uiDisp('    $ logdna register user@example.com');
-        utils.uiDisp('    $ logdna register user@example.com b7c0487cfa5fa7327c9a166c6418598d # use this if you were assigned an Ingestion Key');
         utils.uiDisp('    $ logdna tail \'("timed out" OR "connection refused") -request\'');
         utils.uiDisp('    $ logdna tail -a access.log 500');
         utils.uiDisp('    $ logdna tail -l error,warn');
@@ -97,108 +95,6 @@ properties.parse(config.DEFAULT_CONF_FILE, { path: true }, (err, parsedConfig) =
         param: '-d, --dev'
         , message: 'Development logging via LogDNA'
     };
-
-    program.command('register [email]')
-        .description('Register a new LogDNA account')
-        .option(devOption.param, devOption.message)
-        .action(function(email, options) {
-            let nextstep = function(email) {
-                email = email.toLowerCase();
-
-                let tmpLogWhat = 'LogDNA account registration';
-
-                if (!EMAIL_REGEX.test(email)) {
-                    let tmpDevLogWhy = 'regex failed to validate';
-                    let tmpDevLogMessage = `Invalid email address of ${email}`;
-                    let errLog = utils.devLogPrim({
-                        message: tmpDevLogMessage
-                        , what: tmpLogWhat
-                        , why: tmpDevLogWhy
-                    });
-
-                    logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
-
-                    return process.exit(1); // Hard fail
-                }
-
-                input.required('First name: ', function(firstname) {
-                    input.required('Last name: ', function(lastname) {
-                        input.required('Company/Organization: ', function(company) {
-                            input.done();
-                            utils.apiPost(config, 'register', {
-                                auth: false
-                                , email: email
-                                , firstname: firstname
-                                , lastname: lastname
-                                , company: company
-                            }, function(error, body) {
-                                if (error) {
-                                    let tmpErrLogWhy = 'registration via API';
-                                    let tmpErrLogMessage = 'ERROR: register new - account and organization details';
-                                    let tmpErrLogData = {message:error.message, code:error.code, stack:error.stack};
-                                    let errLog = utils.devLogPrim({
-                                        message: tmpErrLogMessage
-                                        , what: tmpLogWhat + ' - account/org details'
-                                        , why: tmpErrLogWhy
-                                        , additional: {errData: tmpErrLogData}
-                                    });
-
-                                    logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
-
-                                    return process.exit(1); // Hard fail
-                                }
-                                config.email = email;
-
-                                if (config.account !== body.account) {
-                                    config.account = body.account;
-                                    config.token = null;
-                                    config.servicekey = null;
-                                }
-
-                                config.key = body.key;
-
-                                if (body.token) config.token = body.token; // save token if available
-
-                                if (body.servicekeys && body.servicekeys.length) config.servicekey = body.servicekeys[0];
-
-                                utils.saveConfig(config, function(error, success) {
-                                    if (error) {
-                                        let tmpErrLogWhy = 'saving configuration';
-                                        let errLog = utils.devLogPrim({
-                                            message: `ERROR: ${tmpErrLogWhy} - ${error.message}`
-                                            , what: tmpLogWhat
-                                            , why: tmpErrLogWhy
-                                            , additional: {errData:{message:error.message, code:error.code, stack:error.stack}}
-                                        });
-
-                                        logger.log({message:errLog, level:'error'}); // Send to console and LogDNA if API key is set
-
-                                        return process.exit(1); // Hard fail
-                                    }
-                                    utils.uiDisp();
-                                    utils.uiDisp('Thank you for signing up! Saving credentials to local config...');
-                                    utils.uiDisp('Your Ingestion Key is: ' + body.key + '. ');
-                                    utils.uiDisp();
-                                    utils.uiDisp('Next steps:');
-                                    utils.uiDisp('===========');
-                                    utils.uiDisp('1. We\'ve sent you a welcome email to create your password. Once set, come back here and use \'logdna login\'');
-                                    utils.uiDisp('2. Visit https://docs.logdna.com/docs/ingestion-methods for more info on collecting your logs via our Agent, Syslog, Heroku, API, or code libraries.');
-                                    return utils.uiDisp();
-                                });
-                            });
-                        });
-                    });
-                });
-            };
-
-            if (email) {
-                nextstep(email);
-            } else {
-                input.required('Email: ', function(email) {
-                    nextstep(email);
-                });
-            }
-        });
 
     program.command('ssologin')
         .description('Log in to a LogDNA via single sign-on')
